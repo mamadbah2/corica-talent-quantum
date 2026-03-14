@@ -61,12 +61,21 @@ export default function SuperAdminDashboard() {
 
     useEffect(() => {
         setIsMounted(true);
-        // Calcul initial des stats
-        const rate = Math.round((ALL_USERS.filter(u => localStorage.getItem(`pdf_uploaded_${u.id_usercount}`) === 'true').length / ALL_USERS.length) * 100);
-        const missing = ALL_USERS.length - ALL_USERS.filter(u => localStorage.getItem(`pdf_uploaded_${u.id_usercount}`) === 'true').length;
-        const critical = ALL_USERS.filter(u => localStorage.getItem(`n1_eval_submitted_${u.id_usercount}`) === 'true' && localStorage.getItem(`n2_validated_${u.id_usercount}`) !== 'true').length;
-        const completed = ALL_USERS.filter(u => localStorage.getItem(`n2_validated_${u.id_usercount}`) === 'true').length;
-        
+        // Calcul des stats depuis le workflow réel (localStorage)
+        const totalEmployees = ALL_USERS.filter(u => u.role === 'employe').length;
+        const kpiSubmitted = ALL_USERS.filter(u => localStorage.getItem(`kpi_submitted_${u.id_usercount}`) === 'true').length;
+        const kpiValidated = ALL_USERS.filter(u => localStorage.getItem(`kpi_validated_${u.id_usercount}`) === 'true').length;
+        const selfEvalDone = ALL_USERS.filter(u => localStorage.getItem(`eval_submitted_${u.id_usercount}`) === 'true').length;
+        const n1EvalDone = ALL_USERS.filter(u => localStorage.getItem(`n1_eval_submitted_${u.id_usercount}`) === 'true').length;
+        const n2Done = ALL_USERS.filter(u => localStorage.getItem(`n2_validated_${u.id_usercount}`) === 'true').length;
+
+        const progressTotal = kpiSubmitted + kpiValidated + selfEvalDone + n1EvalDone + n2Done;
+        const maxProgress = totalEmployees * 5;
+        const rate = maxProgress > 0 ? Math.round((progressTotal / maxProgress) * 100) : 0;
+        const missing = totalEmployees - kpiSubmitted;
+        const critical = ALL_USERS.filter(u => localStorage.getItem(`eval_submitted_${u.id_usercount}`) === 'true' && localStorage.getItem(`n1_eval_submitted_${u.id_usercount}`) !== 'true').length;
+        const completed = n1EvalDone;
+
         setStats({
             complianceRate: rate,
             missingSignatures: missing,
@@ -305,42 +314,46 @@ export default function SuperAdminDashboard() {
                             <div className="animate-in fade-in zoom-in-95 duration-300 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                                     <div className="bg-white p-6 rounded-xl shadow-sm border border-[#A39D98]/30">
-                                        <h3 className="text-sm font-bold text-[#A39D98] uppercase">Taux de Conformité</h3>
+                                        <h3 className="text-sm font-bold text-[#A39D98] uppercase">Avancement Global</h3>
                                         <div className="flex items-end gap-3 mt-2">
                                             <span className="text-3xl font-black text-[#463738]">
                                                 {isMounted ? stats.complianceRate : 0}%
                                             </span>
                                             <div className="w-full bg-gray-200 h-2 rounded-full mb-2">
-                                                <div className="bg-[#F26322] h-2 rounded-full" style={{ width: `${isMounted ? stats.complianceRate : 0}%` }}></div>
+                                                <div className="bg-[#F26322] h-2 rounded-full transition-all" style={{ width: `${isMounted ? stats.complianceRate : 0}%` }}></div>
                                             </div>
                                         </div>
+                                        <p className="text-[10px] text-[#A39D98] mt-1">Score pondéré 5 étapes workflow</p>
                                     </div>
                                     <div className="bg-white p-6 rounded-xl shadow-sm border border-[#A39D98]/30">
-                                        <h3 className="text-sm font-bold text-[#A39D98] uppercase">Signatures Manquantes</h3>
+                                        <h3 className="text-sm font-bold text-[#A39D98] uppercase">KPIs Non Soumis</h3>
                                         <div className="flex items-end gap-3 mt-2">
                                             <span className="text-3xl font-black text-red-600">
                                                 {isMounted ? stats.missingSignatures : 0}
                                             </span>
-                                            <span className="text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100 mb-1">Attention</span>
+                                            <span className="text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100 mb-1">En attente</span>
                                         </div>
+                                        <p className="text-[10px] text-[#A39D98] mt-1">Employés n&apos;ayant pas soumis leurs objectifs</p>
                                     </div>
                                     <div className="bg-white p-6 rounded-xl shadow-sm border border-[#A39D98]/30">
-                                        <h3 className="text-sm font-bold text-[#A39D98] uppercase">Alertes Arbitrage</h3>
+                                        <h3 className="text-sm font-bold text-[#A39D98] uppercase">En attente N+1</h3>
                                         <div className="flex items-end gap-3 mt-2">
                                             <span className="text-3xl font-black text-amber-500">
                                                 {isMounted ? stats.criticalAlerts : 0}
                                             </span>
-                                            <span className="text-sm font-bold text-[#A39D98] mb-1">Cas critiques</span>
+                                            <span className="text-sm font-bold text-[#A39D98] mb-1">Auto-évals soumises</span>
                                         </div>
+                                        <p className="text-[10px] text-[#A39D98] mt-1">Auto-évals en attente d&apos;évaluation Manager</p>
                                     </div>
                                     <div className="bg-white p-6 rounded-xl shadow-sm border border-[#A39D98]/30">
-                                        <h3 className="text-sm font-bold text-[#A39D98] uppercase">Évaluations Terminées</h3>
+                                        <h3 className="text-sm font-bold text-[#A39D98] uppercase">Évaluations N+1</h3>
                                         <div className="flex items-end gap-3 mt-2">
                                             <span className="text-3xl font-black text-[#9A9750]">
                                                 {isMounted ? stats.completedEvals : 0}
                                             </span>
                                             <span className="text-sm font-bold text-[#A39D98] mb-1">Ce cycle</span>
                                         </div>
+                                        <p className="text-[10px] text-[#A39D98] mt-1">Managers ayant soumis leur évaluation</p>
                                     </div>
                                 </div>
 
@@ -357,7 +370,7 @@ export default function SuperAdminDashboard() {
                                                 { site: 'HQ Corporate', key: 'Abidjan' }
                                             ].map((s, i) => {
                                                 const total = ALL_USERS.filter(u => u.pays.toLowerCase().includes(s.key.toLowerCase()) || u.scope?.toLowerCase() === s.key.toLowerCase()).length;
-                                                const done = ALL_USERS.filter(u => (u.pays.toLowerCase().includes(s.key.toLowerCase()) || u.scope?.toLowerCase() === s.key.toLowerCase()) && localStorage.getItem(`pdf_uploaded_${u.id_usercount}`) === 'true').length;
+                                                const done = ALL_USERS.filter(u => (u.pays.toLowerCase().includes(s.key.toLowerCase()) || u.scope?.toLowerCase() === s.key.toLowerCase()) && (localStorage.getItem(`kpi_submitted_${u.id_usercount}`) === 'true' || localStorage.getItem(`n1_eval_submitted_${u.id_usercount}`) === 'true')).length;
                                                 const progress = total > 0 ? Math.round((done / total) * 100) : 0;
                                                 return (
                                                     <div key={i} className="space-y-1">

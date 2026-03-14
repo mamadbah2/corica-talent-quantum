@@ -18,15 +18,10 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { DownloadGuideButton } from '@/components/DownloadGuideButton';
 import { NavButtons } from '@/components/NavButtons';
 import { NotificationBell } from '@/components/NotificationBell';
+import { SkillsMatrixModule } from '@/components/skills/SkillsMatrixModule';
 
-type ViewMode = 'MY_PROFILE' | 'MY_TEAM';
+type ViewMode = 'MY_PROFILE' | 'MY_TEAM' | 'SKILLS';
 
-// Mock Data KPIs du manager (ses propres objectifs)
-const MY_KPIS = [
-    { id: 1, desc: 'Augmenter la rétention des talents sur site de 15%', weight: 40, status: 'VALIDATED' },
-    { id: 2, desc: 'Mettre en place le nouveau protocole sécurité HS', weight: 40, status: 'VALIDATED' },
-    { id: 3, desc: 'Coaching de 2 ingénieurs juniors', weight: 20, status: 'VALIDATED' },
-];
 
 export default function ManagerDashboard() {
     const router = useRouter();
@@ -35,7 +30,7 @@ export default function ManagerDashboard() {
     const [showNineBox, setShowNineBox] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-    const VIEWS: ViewMode[] = ['MY_TEAM', 'MY_PROFILE'];
+    const VIEWS: ViewMode[] = ['MY_TEAM', 'MY_PROFILE', 'SKILLS'];
     const currentViewIndex = VIEWS.indexOf(viewMode);
     const handlePrevView = () => setViewMode(VIEWS[currentViewIndex > 0 ? currentViewIndex - 1 : VIEWS.length - 1]);
     const handleNextView = () => setViewMode(VIEWS[currentViewIndex < VIEWS.length - 1 ? currentViewIndex + 1 : 0]);
@@ -80,7 +75,11 @@ export default function ManagerDashboard() {
                 <div className="flex items-center gap-2 text-[13px] font-bold text-[#A39D98]">
                     <span className="flex items-center gap-1.5 cursor-pointer hover:text-[#F26322] transition-colors"><Home size={15} className="mb-0.5" /> 🏠 Page d'accueil</span>
                     <ChevronRight size={14} />
-                    <span className="text-[#463738]">{viewMode === 'MY_TEAM' ? 'Mon Équipe' : 'Mon Profil'}</span>
+                    <span className="text-[#463738]">
+                        {viewMode === 'MY_TEAM' && 'Mon Équipe'}
+                        {viewMode === 'MY_PROFILE' && 'Mon Profil'}
+                        {viewMode === 'SKILLS' && 'Compétences Équipe'}
+                    </span>
                 </div>
 
                 <div className="flex items-center gap-4 text-[14px]">
@@ -108,6 +107,13 @@ export default function ManagerDashboard() {
                         </button>
                     )}
 
+                    <button
+                        onClick={() => setViewMode('SKILLS')}
+                        className={`px-5 py-2 font-bold rounded-lg transition-all flex items-center gap-2 ${viewMode === 'SKILLS' ? 'bg-[#9A9750] text-white shadow-md' : 'text-[#463738] hover:bg-[#E3E1DB]'}`}
+                    >
+                        <Star size={18} /> Compétences Équipe
+                    </button>
+
                     <div className="h-6 w-px bg-[#A39D98]/30 mx-2"></div>
                     <button
                         onClick={() => setShowNineBox(true)}
@@ -132,6 +138,12 @@ export default function ManagerDashboard() {
         ======================================================= */}
                 {viewMode === 'MY_TEAM' && (
                     <MyTeamMockup />
+                )}
+
+                {viewMode === 'SKILLS' && (
+                    <div className="animate-in fade-in duration-300">
+                        <SkillsMatrixModule />
+                    </div>
                 )}
 
             </main>

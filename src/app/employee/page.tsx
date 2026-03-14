@@ -14,6 +14,8 @@ import { CoricaLogo } from '@/components/CoricaLogo';
 import { useUser } from '@/context/UserContext';
 import { UserAvatar } from '@/components/UserAvatar';
 import { DownloadGuideButton } from '@/components/DownloadGuideButton';
+import { SkillsMatrixModule } from '@/components/skills/SkillsMatrixModule';
+import { printEvaluationForm } from '@/lib/printUtils';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend
@@ -21,7 +23,7 @@ import {
 
 type EmployeeGrade = 'MANAGER' | 'NON_CADRE';
 type KpiStatus = 'DRAFT' | 'N1_PROPOSED' | 'MODIFIED_BY_EMP' | 'VALIDATED';
-type EmployeeView = 'PROFILE' | 'OBJECTIVES' | 'EVALUATION' | 'DASHBOARD';
+type EmployeeView = 'PROFILE' | 'OBJECTIVES' | 'EVALUATION' | 'DASHBOARD' | 'SKILLS';
 
 export default function EmployeeDashboard() {
     const router = useRouter();
@@ -194,7 +196,7 @@ export default function EmployeeDashboard() {
         );
     };
 
-    const VIEWS: (EmployeeView | null)[] = [null, 'PROFILE', 'OBJECTIVES', 'EVALUATION', 'DASHBOARD'];
+    const VIEWS: (EmployeeView | null)[] = [null, 'PROFILE', 'OBJECTIVES', 'EVALUATION', 'DASHBOARD', 'SKILLS'];
     const currentIndex = VIEWS.indexOf(activeView);
     const handlePrevView = () => setActiveView(VIEWS[currentIndex > 0 ? currentIndex - 1 : VIEWS.length - 1]);
     const handleNextView = () => setActiveView(VIEWS[currentIndex < VIEWS.length - 1 ? currentIndex + 1 : 0]);
@@ -254,6 +256,7 @@ export default function EmployeeDashboard() {
                                 {activeView === 'OBJECTIVES' && 'Mes objectifs de performance'}
                                 {activeView === 'EVALUATION' && 'Mon auto-évaluation'}
                                 {activeView === 'DASHBOARD' && "Dashboard de l'Employé"}
+                                {activeView === 'SKILLS' && 'Mes Compétences'}
                             </span>
                         </>
                     )}
@@ -333,7 +336,14 @@ export default function EmployeeDashboard() {
                             className={`p-6 rounded-lg font-bold text-[17px] flex items-center justify-center gap-4 transition-all hover:-translate-y-1 ${activeView === 'DASHBOARD' ? 'ring-4 ring-offset-2 ring-[#F26322]/30 shadow-lg' : 'shadow hover:shadow-md'}`}
                             style={{ background: 'linear-gradient(to right, #ee7329, #53392d)', color: 'white' }}
                         >
-                            <LayoutDashboard size={24} /> Dashboard de l'Employé
+                            <LayoutDashboard size={24} /> Dashboard de l&apos;Employé
+                        </button>
+                        <button
+                            onClick={() => setActiveView('SKILLS')}
+                            className={`p-6 rounded-lg font-bold text-[17px] flex items-center justify-center gap-4 transition-all hover:-translate-y-1 md:col-span-2 ${activeView === 'SKILLS' ? 'ring-4 ring-offset-2 ring-[#9A9750]/30 shadow-lg' : 'shadow hover:shadow-md'}`}
+                            style={{ background: 'linear-gradient(to right, #6b7530, #463738)', color: 'white' }}
+                        >
+                            <Star size={24} /> Mes Compétences &amp; Formation
                         </button>
                     </div>
                 </div>
@@ -604,6 +614,26 @@ export default function EmployeeDashboard() {
                                     <button onClick={() => { setToastMessage("Objectifs enregistrés en brouillon."); setTimeout(() => setToastMessage(null), 3000); }} className="px-5 py-2 bg-[#F26322] text-white rounded font-bold text-[13px] shadow-sm hover:bg-[#eb5b1b] transition-colors flex items-center gap-2">
                                         <FilePlus size={16} /> Enregistrer
                                     </button>
+                                    <button
+                                        onClick={() => {
+                                            const raw = typeof window !== 'undefined' ? localStorage.getItem('eval_period') : null;
+                                            const period = raw ? JSON.parse(raw) : null;
+                                            printEvaluationForm({
+                                                employeeName: currentUser?.nom_prenoms ?? 'Collaborateur',
+                                                employeeId: currentUser?.usercount ?? '',
+                                                fonction: currentUser?.fonction ?? '',
+                                                departement: currentUser?.departement ?? '',
+                                                site: currentUser?.site ?? '',
+                                                pays: currentUser?.pays ?? '',
+                                                managerN1Name: managerN1?.nom_prenoms,
+                                                kpis: objectiveDrafts,
+                                                campaignLabel: period?.label,
+                                            }, 'objectives');
+                                        }}
+                                        className="px-5 py-2 bg-[#463738] text-white rounded font-bold text-[13px] shadow-sm hover:bg-gray-800 transition-colors flex items-center gap-2"
+                                    >
+                                        <Download size={16} /> Imprimer Fiche
+                                    </button>
                                     <button onClick={() => {
                                         if (currentUser) {
                                             localStorage.setItem(`kpi_submitted_${currentUser.id_usercount}`, 'true');
@@ -645,6 +675,28 @@ export default function EmployeeDashboard() {
                                     <div className="flex gap-3 items-center">
                                         <button onClick={() => { setToastMessage("Historique d'évaluation bientôt disponible."); setTimeout(() => setToastMessage(null), 3000); }} className="flex items-center gap-2 px-4 py-2 border border-[#d1d6bc] bg-transparent text-[#9A9750] rounded font-bold text-sm hover:bg-[#E9EBE2] transition-colors shadow-sm">
                                             <History size={16} /> Historique
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const raw = typeof window !== 'undefined' ? localStorage.getItem('eval_period') : null;
+                                                const period = raw ? JSON.parse(raw) : null;
+                                                printEvaluationForm({
+                                                    employeeName: currentUser?.nom_prenoms ?? 'Collaborateur',
+                                                    employeeId: currentUser?.usercount ?? '',
+                                                    fonction: currentUser?.fonction ?? '',
+                                                    departement: currentUser?.departement ?? '',
+                                                    site: currentUser?.site ?? '',
+                                                    pays: currentUser?.pays ?? '',
+                                                    managerN1Name: managerN1?.nom_prenoms,
+                                                    kpis: grade === 'NON_CADRE' ? ncKpis.map(k => ({ name: k.desc, desc: k.desc, weight: k.weight })) : mgrKpis.performance.map(k => ({ name: k.desc, desc: k.desc, weight: k.weight })),
+                                                    evalScores,
+                                                    evalComments,
+                                                    campaignLabel: period?.label,
+                                                }, 'evaluation');
+                                            }}
+                                            className="flex items-center gap-2 px-4 py-2 bg-[#463738] text-white rounded font-bold text-sm hover:bg-gray-800 transition-colors shadow-sm"
+                                        >
+                                            <Download size={16} /> Imprimer Fiche
                                         </button>
                                         <button onClick={() => setActiveView(null)} className="text-[#A39D98] hover:text-[#463738] ml-2 p-1 bg-[#E3E1DB]/50 rounded-full">
                                             <X size={20} />
@@ -995,6 +1047,12 @@ export default function EmployeeDashboard() {
                         </div>
                     )
                 }
+                {activeView === 'SKILLS' && (
+                    <div className="animate-in fade-in duration-300">
+                        <SkillsMatrixModule />
+                    </div>
+                )}
+
             </main >
         </div >
     );
