@@ -29,7 +29,7 @@ export function NotificationBell() {
         }
     };
 
-    const formatDate = (ts: number) => {
+    const formatDate = (ts: string) => {
         const date = new Date(ts);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };

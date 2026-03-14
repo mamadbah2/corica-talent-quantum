@@ -81,21 +81,8 @@ const USERS: CoricaUser[] = [
     { id_usercount: 12410, nom_prenoms: "Djibo Ibouraima", pays: "Cote d'Ivoire", departement: "GOUVERNANCE & COMPLIANCE", fonction: "SUPER ADMINISTRATEUR / GRC", scope: "Abidjan", interface_utilisateur: "superadmin", usercount: "Employe.12410@company.com", mot_de_passe: "COR-123", id_evaluateur: 10088, id_evaluateur_n2: 10101, route: "/super-admin" },
 ];
 
-// GET all users (for admin listings)
-export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
-    const scope = searchParams.get('scope');
-    const role = searchParams.get('role');
-
-    let filtered = USERS;
-    if (scope) filtered = filtered.filter(u => u.scope === scope);
-    if (role) filtered = filtered.filter(u => u.interface_utilisateur === role);
-
-    // Never return passwords in listing
-    return NextResponse.json(filtered.map(u => ({
-        ...u,
-        mot_de_passe: undefined
-    })));
+export async function GET() {
+  return Response.json({ users: USERS });
 }
 
 // POST /api/users/auth - Authentication

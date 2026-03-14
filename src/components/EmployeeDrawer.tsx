@@ -32,8 +32,8 @@ export function EmployeeDrawer({ employee, isOpen, onClose, onSave }: EmployeeDr
     const handleSkillChange = (index: number, newLevel: number) => {
         setFormData(prev => {
             if (!prev) return prev;
-            const updatedSkills = [...prev.skills];
-            updatedSkills[index] = { ...updatedSkills[index], level: newLevel as 1 | 2 | 3 | 4 | 5 };
+            const updatedSkills = [...(prev.skills || [])];
+            updatedSkills[index] = { ...(updatedSkills[index] || {}), level: newLevel as 1 | 2 | 3 | 4 | 5 } as any;
             return { ...prev, skills: updatedSkills };
         });
     };
@@ -191,7 +191,7 @@ export function EmployeeDrawer({ employee, isOpen, onClose, onSave }: EmployeeDr
                                             <Target size={16} className="text-lime-400" /> Matrice de Compétences
                                         </h4>
                                         <div className="space-y-4">
-                                            {formData.skills && formData.skills.map((skill: any, i: number) => (
+                                            {(formData.skills || []).map((skill: any, i: number) => (
                                                 <div key={i}>
                                                     <div className="flex justify-between text-[11px] font-bold text-slate-400 uppercase mb-1 tracking-wider">
                                                         <span>{skill.name}</span>

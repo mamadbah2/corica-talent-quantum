@@ -91,7 +91,7 @@ export function EmployeeTable({ employees, onSelectEmployee }: EmployeeTableProp
                                     </span>
                                 </td>
                                 <td className="p-3">
-                                    <StatusBadge status={emp.status} />
+                                    <StatusBadge status={emp.status || 'Draft'} />
                                 </td>
                                 <td className="p-3 text-right text-slate-500 group-hover:text-white">
                                     <div className="p-1 hover:bg-slate-700/80 rounded-md inline-block transition-colors" onClick={(e) => e.stopPropagation()}>

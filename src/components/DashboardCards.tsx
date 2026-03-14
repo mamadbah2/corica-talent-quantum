@@ -21,9 +21,11 @@ export function DashboardCards({ employees }: DashboardProps) {
     const bubbleData = useMemo(() => {
         const matrix: Record<string, { x: number, y: number, z: number, names: string[] }> = {};
         employees.forEach(emp => {
-            const key = `${emp.performance}-${emp.potential}`;
+            const perf = emp.performance ?? 0;
+            const pot = emp.potential ?? 0;
+            const key = `${perf}-${pot}`;
             if (!matrix[key]) {
-                matrix[key] = { x: emp.performance, y: emp.potential, z: 0, names: [] };
+                matrix[key] = { x: perf, y: pot, z: 0, names: [] };
             }
             matrix[key].z += 100;
             if (matrix[key].names.length < 5) matrix[key].names.push(emp.name);
@@ -58,7 +60,7 @@ export function DashboardCards({ employees }: DashboardProps) {
                         <div key={i} className="glass-panel p-6 rounded-xl flex items-center justify-between hover:border-slate-600 transition-colors">
                             <div>
                                 <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">{card.label}</p>
-                                <p className="text-3xl font-extrabold text-white">{card.value}</p>
+                                <p className="text-3xl font-extrabold text-white">{card.value ?? 0}</p>
                             </div>
                             <div className={`w-12 h-12 rounded-xl border border-transparent ${card.bg} flex items-center justify-center`}>
                                 <Icon className={card.color} size={24} />

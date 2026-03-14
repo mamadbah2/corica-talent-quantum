@@ -123,9 +123,9 @@ export function SiteManagementView({ onBack }: { onBack: () => void }) {
         const n1Dept = isCreation ? form.n1_departement : (findUserById(form.id_evaluateur)?.departement ?? '—');
         const n1Fonc = isCreation ? form.n1_fonction : (findUserById(form.id_evaluateur)?.fonction ?? '—');
 
-        const n2Nom = isCreation ? form.n2_nom : (findUserById(form.id_evaluateur_n2)?.nom_prenoms ?? managerN2.nom_prenoms);
-        const n2Email = isCreation ? form.n2_email : (findUserById(form.id_evaluateur_n2)?.usercount ?? managerN2.usercount);
-        const n2Fonc = isCreation ? form.n2_fonction : (findUserById(form.id_evaluateur_n2)?.fonction ?? managerN2.fonction);
+        const n2Nom = isCreation ? form.n2_nom : (findUserById(form.id_evaluateur_n2)?.nom_prenoms ?? managerN2?.nom_prenoms ?? '—');
+        const n2Email = isCreation ? form.n2_email : (findUserById(form.id_evaluateur_n2)?.usercount ?? managerN2?.usercount ?? '—');
+        const n2Fonc = isCreation ? form.n2_fonction : (findUserById(form.id_evaluateur_n2)?.fonction ?? managerN2?.fonction ?? '—');
 
         const dateNow = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 
@@ -264,8 +264,8 @@ export function SiteManagementView({ onBack }: { onBack: () => void }) {
     // N+1 de l'admin = currentUser lui-même (il est l'évaluateur N+1 des ses directs)
     const n1Name = currentUser?.nom_prenoms ?? '';
     const n1Email = currentUser?.usercount ?? '';
-    const n2Name = managerN2.nom_prenoms;
-    const n2Email = managerN2.usercount;
+    const n2Name = managerN2?.nom_prenoms ?? '—';
+    const n2Email = managerN2?.usercount ?? '—';
 
     // Changer de champ dans le formulaire
     const setF = (key: keyof EmployeeFormData) => (v: string) =>
@@ -288,8 +288,8 @@ export function SiteManagementView({ onBack }: { onBack: () => void }) {
             departement: emp.departement,
             scope: emp.scope,
             pays: emp.pays,
-            id_evaluateur: emp.id_evaluateur,
-            id_evaluateur_n2: emp.id_evaluateur_n2,
+            id_evaluateur: emp.id_evaluateur ?? null,
+            id_evaluateur_n2: emp.id_evaluateur_n2 ?? null,
             n1_nom: '', n1_email: '', n1_departement: '', n1_fonction: '',
             n2_nom: '', n2_email: '', n2_fonction: '',
         });
@@ -420,7 +420,7 @@ export function SiteManagementView({ onBack }: { onBack: () => void }) {
                                 <Field label="Nom et Prénoms" value={findUserById(form.id_evaluateur_n2)?.nom_prenoms ?? n2Name} readOnly />
                                 <Field label="Email" value={findUserById(form.id_evaluateur_n2)?.usercount ?? n2Email} readOnly />
                                 <div className="md:col-span-2">
-                                    <Field label="Fonction / Poste Occupé" value={findUserById(form.id_evaluateur_n2)?.fonction ?? managerN2.fonction} readOnly />
+                                    <Field label="Fonction / Poste Occupé" value={findUserById(form.id_evaluateur_n2)?.fonction ?? managerN2?.fonction ?? ''} readOnly />
                                 </div>
                             </>
                         ) : (

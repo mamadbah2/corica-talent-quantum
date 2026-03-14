@@ -1,6 +1,8 @@
 export type PerformanceScore = number; // 0-5
 export type PotentialScore = number; // 0-48
 
+export type MetricLevel = 1 | 2 | 3;
+
 export interface Employee {
     id: string;
     name: string;
@@ -15,7 +17,31 @@ export interface Employee {
     performanceScoreN1?: number;
     potentialAnswers: number[]; // Array of 16 values (1, 2, or 3)
     evaluationDate?: string;
+    status?: 'Pending' | 'Draft' | 'Closed';
+    avatarUrl?: string;
+    performance?: MetricLevel;
+    potential?: MetricLevel;
+    retentionRisk?: 'Low' | 'Medium' | 'High';
+    impactOfLoss?: 'Low' | 'Medium' | 'High';
+    skills?: string[];
+    idp?: string;
+    successionPlan?: string;
+    lastReviewDate?: string;
+    history?: any[];
+    location?: string;
 }
+
+export const GRID_CELLS_CFG = [
+    { id: '3-3', title: 'Future Leader', performance: 3, potential: 3 },
+    { id: '3-2', title: 'Growth Employee', performance: 2, potential: 3 },
+    { id: '3-1', title: 'Enigma', performance: 1, potential: 3 },
+    { id: '2-3', title: 'High Impact', performance: 3, potential: 2 },
+    { id: '2-2', title: 'Core Employee', performance: 2, potential: 2 },
+    { id: '2-1', title: 'Dilemma', performance: 1, potential: 2 },
+    { id: '1-3', title: 'Trusted Pro', performance: 3, potential: 1 },
+    { id: '1-2', title: 'Effective', performance: 2, potential: 1 },
+    { id: '1-1', title: 'Underperformer', performance: 1, potential: 1 }
+];
 
 export const POTENTIAL_QUESTIONS = [
     { id: 1, text: "Cette personne fait preuve d'initiative et démontre des performances qui vont au-delà de ce qui est généralement attendu dans son travail." },
@@ -37,9 +63,6 @@ export const POTENTIAL_QUESTIONS = [
 ];
 
 export function getMatrixCategory(perf: number, potMean: number) {
-    // perf et potMean sont des moyennes sur 4 étoiles
-    // Faible < 2 | Passable ≥ 2 | Bon ≤ 3,5 | Excellent > 3,5.
-    // Donc: LOW = < 2, AVERAGE = [2, 3.5], HIGH = > 3.5
     let pLevel = perf > 3.5 ? 'HIGH' : perf >= 2 ? 'AVERAGE' : 'LOW';
     let ptLevel = potMean > 3.5 ? 'HIGH' : potMean >= 2 ? 'AVERAGE' : 'LOW';
 
@@ -85,7 +108,6 @@ export function generateMockMatrixData(): Employee[] {
     const roles = ['Ingénieur', 'Technicien', 'Géologue', 'Manager', 'Directeur'];
     const managers = ['John Smith', 'Sarah Connor', 'Paul Atreides'];
     for (let i = 1; i <= 23; i++) {
-        // distribution logic
         let perf = 0; let pot = 0;
         if (i <= 12) { perf = 4 + Math.random(); pot = 40 + Math.random() * 8; }
         else if (i <= 17) { perf = 3 + Math.random(); pot = 30 + Math.random() * 5; }
@@ -99,10 +121,19 @@ export function generateMockMatrixData(): Employee[] {
             jobGrade: 'L3',
             seniority: '3 ans',
             site: 'Site Alpha',
+            location: 'Site Alpha',
             role: roles[i % roles.length],
             manager: managers[i % managers.length],
             performanceScoreN: perf,
-            potentialAnswers: Array(16).fill(0).map(() => Math.floor(Math.random() * 3) + 1)
+            potentialAnswers: Array(16).fill(0).map(() => Math.floor(Math.random() * 3) + 1),
+            status: 'Closed',
+            avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=EMP-${i}`,
+            performance: (Math.floor(perf / 2) + 1) as MetricLevel,
+            potential: (Math.floor(pot / 20) + 1) as MetricLevel,
+            retentionRisk: 'Low',
+            impactOfLoss: 'Medium',
+            skills: ['Leadership', 'Technical'],
+            history: []
         });
     }
     return data;

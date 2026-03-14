@@ -461,15 +461,15 @@ export default function EmployeeDashboard() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                                         <div>
                                             <label className="text-[12px] font-bold text-[#A39D98] mb-1.5 block">Nom et Prénoms</label>
-                                            <input readOnly value={managerN2.nom_prenoms} className="w-full bg-[#f6f6f6] border-none rounded-md px-4 py-2.5 text-[#463738] font-medium text-[15px] outline-none" />
+                                            <input readOnly value={managerN2?.nom_prenoms ?? '—'} className="w-full bg-[#f6f6f6] border-none rounded-md px-4 py-2.5 text-[#463738] font-medium text-[15px] outline-none" />
                                         </div>
                                         <div>
                                             <label className="text-[12px] font-bold text-[#A39D98] mb-1.5 block">Email</label>
-                                            <input readOnly value={managerN2.usercount} className="w-full bg-[#f6f6f6] border-none rounded-md px-4 py-2.5 text-[#463738] font-medium text-[15px] outline-none" />
+                                            <input readOnly value={managerN2?.usercount ?? '—'} className="w-full bg-[#f6f6f6] border-none rounded-md px-4 py-2.5 text-[#463738] font-medium text-[15px] outline-none" />
                                         </div>
                                         <div className="md:col-span-2">
                                             <label className="text-[12px] font-bold text-[#A39D98] mb-1.5 block">Fonction / Poste Occupé</label>
-                                            <input readOnly value={managerN2.fonction} className="w-full bg-[#f6f6f6] border-none rounded-md px-4 py-2.5 text-[#463738] font-medium text-[15px] outline-none" />
+                                            <input readOnly value={managerN2?.fonction ?? '—'} className="w-full bg-[#f6f6f6] border-none rounded-md px-4 py-2.5 text-[#463738] font-medium text-[15px] outline-none" />
                                         </div>
                                     </div>
                                 </div>

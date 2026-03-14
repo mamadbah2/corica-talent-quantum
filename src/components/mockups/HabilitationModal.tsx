@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, Search, Check, Globe, Shield, User, ChevronDown, Lock } from 'lucide-react';
-import { ALL_USERS, CoricaUser } from '@/context/UserContext';
+import { useUser, CoricaUser } from '@/context/UserContext';
 
 interface Habilitation {
     id: string;
@@ -30,15 +30,16 @@ const LEVELS = [
 ] as const;
 
 export function HabilitationModal({ habilitation, onClose, onSave }: HabilitationModalProps) {
+    const { allUsers } = useUser();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState<CoricaUser | null>(
-        habilitation ? ALL_USERS.find(u => u.id_usercount === habilitation.userId) || null : null
+        habilitation ? allUsers.find(u => u.id_usercount === habilitation.userId) || null : null
     );
     const [selectedRole, setSelectedRole] = useState(habilitation?.role || 'Administrateur Pays');
     const [selectedPerimeters, setSelectedPerimeters] = useState<string[]>(habilitation?.perimeters || []);
     const [selectedLevel, setSelectedLevel] = useState(habilitation?.level || 'read');
 
-    const filteredUsers = ALL_USERS.filter(u => 
+    const filteredUsers = allUsers.filter(u => 
         u.nom_prenoms.toLowerCase().includes(searchTerm.toLowerCase()) || 
         u.usercount.toLowerCase().includes(searchTerm.toLowerCase())
     ).slice(0, 5);
