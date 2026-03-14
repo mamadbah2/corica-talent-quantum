@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Bell, LogOut, BarChart3, Users, User,
     MapPin, AlertCircle, FileText, Map, PieChart, Home, ChevronRight,
-    Presentation, BarChart2, Building2, CheckSquare
+    Presentation, BarChart2, Building2, CheckSquare,
+    Calendar, CheckCircle, X as XIcon, Clock, Lock, Unlock
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { CoricaLogo } from '@/components/CoricaLogo';
@@ -30,6 +31,52 @@ export default function CountryAdminDashboard() {
     const showToast = (message: string, type: 'success' | 'warning' | 'error' = 'success') => {
         setToastMessage({ message, type });
         setTimeout(() => setToastMessage(null), 3500);
+    };
+
+    // ─── Période d'évaluation ────────────────────────────────────────────────
+    const [campaignLabel, setCampaignLabel] = useState('Campagne 2026');
+    const [campaignStart, setCampaignStart] = useState('');
+    const [campaignEnd, setCampaignEnd] = useState('');
+    const [savedPeriod, setSavedPeriod] = useState<{ label: string; startDate: string; endDate: string } | null>(null);
+
+    useEffect(() => {
+        const raw = localStorage.getItem('eval_period');
+        if (raw) {
+            try {
+                const p = JSON.parse(raw);
+                setSavedPeriod(p);
+                setCampaignLabel(p.label || 'Campagne 2026');
+                setCampaignStart(p.startDate || '');
+                setCampaignEnd(p.endDate || '');
+            } catch { /* ignore */ }
+        }
+    }, []);
+
+    const handleSavePeriod = () => {
+        if (!campaignStart || !campaignEnd) { showToast('Veuillez renseigner les deux dates.', 'warning'); return; }
+        if (campaignEnd <= campaignStart) { showToast('La date de clôture doit être postérieure à l\'ouverture.', 'warning'); return; }
+        const period = { label: campaignLabel || 'Campagne 2026', startDate: campaignStart, endDate: campaignEnd };
+        localStorage.setItem('eval_period', JSON.stringify(period));
+        setSavedPeriod(period);
+        showToast(`Campagne "${period.label}" activée du ${new Date(campaignStart).toLocaleDateString('fr-FR')} au ${new Date(campaignEnd).toLocaleDateString('fr-FR')}`, 'success');
+    };
+
+    const handleClearPeriod = () => {
+        localStorage.removeItem('eval_period');
+        setSavedPeriod(null);
+        setCampaignStart('');
+        setCampaignEnd('');
+        showToast('Campagne clôturée. Les auto-évaluations sont verrouillées.', 'warning');
+    };
+
+    const periodStatus = () => {
+        if (!savedPeriod) return null;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const start = new Date(savedPeriod.startDate);
+        const end = new Date(savedPeriod.endDate);
+        if (today < start) return { label: `Programmée — s'ouvre le ${start.toLocaleDateString('fr-FR')}`, color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200', Icon: Clock };
+        if (today > end) return { label: 'Clôturée', color: 'text-slate-500', bg: 'bg-slate-50', border: 'border-slate-200', Icon: Lock };
+        return { label: 'En cours ✓', color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', Icon: Unlock };
     };
 
     // Initiales et nom dynamiques
@@ -685,6 +732,61 @@ export default function CountryAdminDashboard() {
                                 <div className="w-full bg-[#E3E1DB] h-2.5 rounded-full mt-4 overflow-hidden relative">
                                     <div className="bg-gradient-to-r from-[#F26322] to-[#9A9750] h-full" style={{ width: '82%' }}></div>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Configuration Campagne d'Évaluation */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-[#F26322]/30 p-6 mb-8">
+                            <h3 className="font-bold text-[#463738] text-[15px] mb-1 flex items-center gap-2">
+                                <Calendar size={18} className="text-[#F26322]" /> Configuration de la Campagne d&apos;Évaluation
+                            </h3>
+                            <p className="text-xs text-[#A39D98] mb-5">Ouvrez ou clôturez la période d&apos;auto-évaluation pour tous les collaborateurs du pays.</p>
+
+                            {(() => {
+                                const status = periodStatus();
+                                if (!status) return null;
+                                const StatusIcon = status.Icon;
+                                return (
+                                    <div className={`mb-4 rounded-xl px-4 py-3 flex items-center justify-between border ${status.bg} ${status.border}`}>
+                                        <div className="flex items-center gap-2">
+                                            <StatusIcon size={16} className={status.color} />
+                                            <div>
+                                                <p className={`text-sm font-black ${status.color}`}>{savedPeriod?.label}</p>
+                                                <p className={`text-xs mt-0.5 ${status.color} opacity-80`}>
+                                                    {status.label} · Du {new Date(savedPeriod!.startDate).toLocaleDateString('fr-FR')} au {new Date(savedPeriod!.endDate).toLocaleDateString('fr-FR')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button onClick={handleClearPeriod} className="text-xs px-3 py-1.5 bg-red-100 text-red-600 font-bold rounded-lg hover:bg-red-200 transition-colors flex items-center gap-1.5">
+                                            <XIcon size={13} /> Clôturer
+                                        </button>
+                                    </div>
+                                );
+                            })()}
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-[11px] font-black text-[#A39D98] uppercase tracking-wider mb-1.5">Libellé</label>
+                                    <input type="text" value={campaignLabel} onChange={e => setCampaignLabel(e.target.value)}
+                                        placeholder="Ex: Campagne 2026"
+                                        className="w-full px-3 py-2.5 rounded-lg border border-[#E3E1DB] bg-[#f8f7f5] text-[14px] text-[#463738] font-semibold outline-none focus:border-[#F26322] focus:bg-white transition-all" />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-black text-[#A39D98] uppercase tracking-wider mb-1.5">Date d&apos;ouverture</label>
+                                    <input type="date" value={campaignStart} onChange={e => setCampaignStart(e.target.value)}
+                                        className="w-full px-3 py-2.5 rounded-lg border border-[#E3E1DB] bg-[#f8f7f5] text-[14px] text-[#463738] outline-none focus:border-[#F26322] focus:bg-white transition-all" />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-black text-[#A39D98] uppercase tracking-wider mb-1.5">Date de clôture</label>
+                                    <input type="date" value={campaignEnd} onChange={e => setCampaignEnd(e.target.value)}
+                                        className="w-full px-3 py-2.5 rounded-lg border border-[#E3E1DB] bg-[#f8f7f5] text-[14px] text-[#463738] outline-none focus:border-[#F26322] focus:bg-white transition-all" />
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                <button onClick={handleSavePeriod}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-[#F26322] text-white rounded-xl font-bold text-sm hover:bg-orange-600 transition-colors shadow-sm">
+                                    <CheckCircle size={16} /> Activer la campagne
+                                </button>
                             </div>
                         </div>
 

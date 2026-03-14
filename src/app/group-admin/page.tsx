@@ -357,6 +357,31 @@ export default function GroupAdminDashboard() {
                         {activeTab === 'ANALYTICS' && (
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-in fade-in zoom-in-95 duration-300">
 
+                                {/* Bandeau statut campagne */}
+                                {(() => {
+                                    const status = periodStatus();
+                                    const StatusIcon = status.Icon;
+                                    return (
+                                        <div className={`col-span-full flex items-center justify-between px-5 py-3 rounded-xl border ${status.bg} ${status.border}`}>
+                                            <div className="flex items-center gap-3">
+                                                <StatusIcon size={18} className={status.color} />
+                                                <div>
+                                                    <span className={`text-sm font-black ${status.color}`}>{periodLabel || 'Campagne non configurée'}</span>
+                                                    {periodStart && periodEnd && (
+                                                        <span className={`ml-3 text-xs font-semibold ${status.color} opacity-80`}>
+                                                            {new Date(periodStart).toLocaleDateString('fr-FR')} → {new Date(periodEnd).toLocaleDateString('fr-FR')} · {status.label}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <button onClick={() => setActiveTab('SETTINGS')}
+                                                className="text-xs font-bold px-3 py-1.5 rounded-lg border border-current opacity-70 hover:opacity-100 transition-opacity flex items-center gap-1.5">
+                                                <Calendar size={13} /> Configurer
+                                            </button>
+                                        </div>
+                                    );
+                                })()}
+
                                 {/* Key Metrics */}
                                 {[
                                     { title: "Filiales actives", val: "6", c: "text-[#463738]" },

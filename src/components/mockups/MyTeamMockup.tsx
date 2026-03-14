@@ -10,6 +10,7 @@ import {
     TrendingUp, Target, ListChecks, Award, Home, Edit3, Search
 } from 'lucide-react';
 import { useUser, ALL_USERS, CoricaUser } from '@/context/UserContext';
+import { printEvaluationForm } from '@/lib/printUtils';
 import { UserAvatar } from '@/components/UserAvatar';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -311,38 +312,27 @@ function ModalEvaluer({ member, onClose, addNotification }: { member: TeamMember
         </ModalShell>
     );
 
+    const { currentUser } = useUser();
+
     const handlePrintDraft = () => {
-        const printWindow = window.open('', '', 'height=800,width=1000');
-        if (!printWindow) return;
-
-        const html = `
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <title>Brouillon_Évaluation_${member.user.nom_prenoms.replace(/\s+/g, '_')}</title>
-                    <style>
-                        body { font-family: sans-serif; padding: 40px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-                        th { background: #f0f0f0; }
-                        h1 { color: #F26322; }
-                    </style>
-                </head>
-                <body>
-                    <h1>Brouillon d'Évaluation N+1</h1>
-                    <h2>Collaborateur : ${member.user.nom_prenoms}</h2>
-                    <p>Statut : En cours de rédaction</p>
-                    <table>
-                        <tr><th>Objectif</th><th>Note Actuelle</th></tr>
-                        ${kpis.map((kpi, i) => `<tr><td>${kpi}</td><td>${scores[i] ? scores[i] + '/4' : 'Non Noté'}</td></tr>`).join('')}
-                    </table>
-                </body>
-            </html>
-        `;
-
-        printWindow.document.write(html);
-        printWindow.document.close();
-        setTimeout(() => printWindow.print(), 500);
+        const raw = typeof window !== 'undefined' ? localStorage.getItem('eval_period') : null;
+        const period = raw ? JSON.parse(raw) : null;
+        printEvaluationForm({
+            employeeName: member.user.nom_prenoms,
+            employeeId: member.user.usercount,
+            fonction: member.user.fonction,
+            departement: member.user.departement,
+            site: member.user.site,
+            pays: member.user.pays,
+            managerN1Name: currentUser?.nom_prenoms,
+            kpis: kpis.map((k, i) => ({
+                name: realKpis?.[i]?.name || `Objectif ${i + 1}`,
+                desc: k.desc,
+                measure: k.measure,
+            })),
+            evalScores: scores,
+            campaignLabel: period?.label,
+        }, 'evaluation');
     };
 
     return (
@@ -565,101 +555,23 @@ function ModalVoirEval({ member, onClose }: { member: TeamMember; onClose: () =>
         ? (kpisData.reduce((acc, k) => acc + k.score, 0) / kpisData.length).toFixed(1)
         : '0.0';
 
+    const { currentUser } = useUser();
+
     const handleDownloadPDF = () => {
-        const printWindow = window.open('', '', 'height=800,width=1000');
-        if (!printWindow) return;
-
-        const html = `
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <title>Évaluation_Corica_${member.user.nom_prenoms.replace(/\s+/g, '_')}</title>
-                    <script src="https://cdn.tailwindcss.com"></script>
-                    <style>
-                        @media print {
-                            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                            @page { margin: 15mm; }
-                        }
-                    </style>
-                </head>
-                <body class="p-8 max-w-4xl mx-auto font-sans">
-                    <!-- En-tête -->
-                    <div class="flex items-center justify-between mb-8 pb-4 border-b-2 border-[#9A9750]">
-                        <div>
-                            <h1 class="text-3xl font-black text-[#463738] mb-1">CORICA MINING SERVICES</h1>
-                            <h2 class="text-xl font-bold text-[#F26322]">TALENT QUANTUM</h2>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm font-bold text-[#A39D98] uppercase tracking-wider mb-1">Évaluation Clôturée</p>
-                            <p class="text-[17px] font-black text-[#463738]">${member.user.nom_prenoms}</p>
-                            <p class="text-sm text-[#A39D98]">${member.user.fonction}</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Statut -->
-                    <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
-                        <div class="w-8 h-8 rounded-full bg-[#9A9750] flex items-center justify-center text-white font-bold shrink-0">✓</div>
-                        <div>
-                            <p class="font-bold text-[#463738] text-sm">Dossier clôturé — Placement 9-Box verrouillé</p>
-                            <p class="text-xs text-[#A39D98]">Ce dossier est validé par la calibration N+2.</p>
-                        </div>
-                    </div>
-
-                    <!-- Grille KPIs -->
-                    <div class="border border-[#E3E1DB] rounded-xl overflow-hidden mb-8">
-                        <table class="w-full text-[13px] text-left">
-                            <thead class="bg-[#2B5C3F] text-white">
-                                <tr>
-                                    <th class="px-4 py-3 border-b border-[#E3E1DB]">Objectif</th>
-                                    <th class="px-4 py-3 border-b border-[#E3E1DB]">Description (KPI)</th>
-                                    <th class="px-4 py-3 text-center border-b border-[#E3E1DB] w-24">Note</th>
-                                    <th class="px-4 py-3 text-center border-b border-[#E3E1DB] w-32">Résultat</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${kpisData.map((k, i) => `
-                                    <tr class="bg-white">
-                                        <td class="px-4 py-3 font-bold text-[#463738] border-b border-[#E3E1DB]">${k.title}</td>
-                                        <td class="px-4 py-3 text-[#463738] border-b border-[#E3E1DB]">${k.desc}</td>
-                                        <td class="px-4 py-3 text-center border-b border-[#E3E1DB] font-bold text-[#F26322]">${k.score}/4</td>
-                                        <td class="px-4 py-3 text-center border-b border-[#E3E1DB]">
-                                            <span class="px-2 py-1 rounded text-[11px] font-bold ${k.score >= 3 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                                                ${STAR_LABELS[k.score] || '—'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                        <div class="bg-[#E9EBE2] px-6 py-4 flex justify-between items-center">
-                            <span class="font-bold text-base text-[#9A9750]">Note moyenne finale</span>
-                            <span class="text-3xl font-black text-[#F26322]">${avg}/4</span>
-                        </div>
-                    </div>
-
-                    <!-- Signatures -->
-                    <div class="mt-12 pt-8 border-t border-[#E3E1DB] flex justify-between px-10">
-                        <div class="text-center">
-                            <p class="font-bold text-[#463738] text-sm mb-16">Signature Manager (N+1)</p>
-                            <p class="text-xs text-[#A39D98] border-t border-[#A39D98] pt-2 w-48 mx-auto font-mono">Date : __ /__ / 202__</p>
-                        </div>
-                        <div class="text-center">
-                            <p class="font-bold text-[#463738] text-sm mb-16">Signature Employé</p>
-                            <p class="text-xs text-[#A39D98] border-t border-[#A39D98] pt-2 w-48 mx-auto font-mono">Date : __ /__ / 202__</p>
-                        </div>
-                    </div>
-                </body>
-            </html>
-        `;
-
-        printWindow.document.write(html);
-        printWindow.document.close();
-
-        // Pause pour laisser CDN Tailwind créer les styles avant d'appeler l'impression
-        setTimeout(() => {
-            printWindow.focus();
-            printWindow.print();
-        }, 1500);
+        const raw = typeof window !== 'undefined' ? localStorage.getItem('eval_period') : null;
+        const period = raw ? JSON.parse(raw) : null;
+        printEvaluationForm({
+            employeeName: member.user.nom_prenoms,
+            employeeId: String(member.user.id_usercount),
+            fonction: (member.user as any).fonction ?? '—',
+            departement: (member.user as any).departement ?? '—',
+            site: member.user.site,
+            pays: member.user.pays,
+            managerN1Name: currentUser?.nom_prenoms,
+            kpis: kpisData.map(k => ({ name: k.title, desc: k.desc })),
+            evalScores: Object.fromEntries(kpisData.map((k, i) => [i, k.score])),
+            campaignLabel: period?.label,
+        }, 'evaluation');
     };
 
     return (
