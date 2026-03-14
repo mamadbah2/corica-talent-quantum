@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # -------------------------------------------------------------------------
+  # Application Frontend / Backend (Serveur Next.js Standalone)
+  # -------------------------------------------------------------------------
+  web:
+    container_name: corica_9box_web
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # L'application lira ces variables soit depuis le système, soit depuis le fichier .env si présent
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-corica_admin}
+      - DB_PASSWORD=${DB_PASSWORD:-YourStrongPasswordHere}
+      - DB_NAME=${DB_NAME:-corica_9box_db}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://corica_admin:YourStrongPasswordHere@postgres:5432/corica_9box_db?schema=public}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      - AZURE_AD_CLIENT_ID=${AZURE_AD_CLIENT_ID}
+      - AZURE_AD_CLIENT_SECRET=${AZURE_AD_CLIENT_SECRET}
+      - AZURE_AD_TENANT_ID=${AZURE_AD_TENANT_ID}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - corica_internal_network
+
+  # -------------------------------------------------------------------------
+  # Base de Données (PostgreSQL) - Stockage Sécurisé avec RLS
+  # -------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: corica_9box_db
+    restart: always
+    environment:
+      # Initialisation de la base par défaut si elle n'existe pas
+      POSTGRES_USER: ${DB_USER:-corica_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-YourStrongPasswordHere}
+      POSTGRES_DB: ${DB_NAME:-corica_9box_db}
+    ports:
+      - "5432:5432" # Uniquement pour accès interne Admins IT (VPN)
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - corica_internal_network
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  corica_internal_network:
+    driver: bridge
