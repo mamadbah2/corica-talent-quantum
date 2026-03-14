@@ -687,11 +687,10 @@ export default function SiteAdminDashboard() {
             <header className="h-[76px] bg-white border-b border-[#A39D98]/30 px-8 flex items-center justify-between shrink-0 relative z-10">
                 <div className="flex items-center gap-3">
                     <NavButtons onPrev={handlePrevView} onNext={handleNextView} />
-                    <div className="w-10 h-10 bg-[#463738] rounded flex items-center justify-center shadow-sm">
-                        <CoricaLogo className="w-6 h-6" />
-                    </div>
-                    <div className="flex flex-col justify-center">
-                        <h1 className="text-[19px] text-[#463738] font-bold tracking-tight">CORICA MINING SERVICES</h1>
+                    <CoricaLogo className="h-10 w-auto" />
+                    <div className="flex flex-col justify-center mr-4">
+                        <h1 className="text-[19px] text-[#463738] font-extrabold tracking-tight leading-none uppercase">Talent Quantum <span className="text-[#F26322]">v8.0</span></h1>
+                        <p className="text-[10px] text-[#A39D98] font-bold tracking-widest uppercase">Espace Admin Site (RRH)</p>
                     </div>
                 </div>
 

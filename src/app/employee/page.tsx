@@ -215,7 +215,8 @@ export default function EmployeeDashboard() {
                     <NavButtons onPrev={handlePrevView} onNext={handleNextView} />
                     <CoricaLogo className="h-10" />
                     <div className="flex flex-col justify-center">
-                        <h1 className="text-[19px] text-[#463738] font-bold tracking-tight uppercase">Talent Quantum v8.0</h1>
+                        <h1 className="text-[19px] text-[#463738] font-extrabold tracking-tight leading-none uppercase">Talent Quantum <span className="text-[#F26322]">v8.0</span></h1>
+                        <p className="text-[10px] text-[#A39D98] font-bold tracking-widest uppercase">Espace Collaborateur</p>
                     </div>
                 </div>
 
