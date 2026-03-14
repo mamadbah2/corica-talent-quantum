@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+*.exe
+*.log
+*.zip
+.env.local
+.env
+ngrok*
+cloudflared*
+cf-tunnel*
+serveo*
+pinggy*
+publicdocs/
