@@ -18,10 +18,12 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { UserAvatar } from '@/components/UserAvatar';
 import { DownloadGuideButton } from '@/components/DownloadGuideButton';
 import { NavButtons } from '@/components/NavButtons';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 
 type ViewMode = 'MY_PROFILE' | 'MY_TEAM' | 'COUNTRY_ADMIN' | 'COUNTRY_MGMT' | 'RAPPORT_PILOTAGE_PAYS';
 
 export default function CountryAdminDashboard() {
+    useRoleGuard('Employe.10053@company.com');
     const router = useRouter();
     const { currentUser } = useUser();
     const [viewMode, setViewMode] = useState<ViewMode>('COUNTRY_ADMIN');
@@ -481,18 +483,28 @@ export default function CountryAdminDashboard() {
 
     // ─── Vue : Rapport de Pilotage Pays ──────────────────────────────────────────
     const renderRapportPilotagePays = () => {
-        // Données fictives pour la démonstration
-        const statsSites = [
-            { nom: "Bureau d'Abidjan", effectif: 120, evalues: 110, pourcentage: 91 },
-            { nom: 'Ity', effectif: 180, evalues: 170, pourcentage: 94 },
-            { nom: 'Sissengué', effectif: 90, evalues: 85, pourcentage: 94 },
-            { nom: 'Tongon', effectif: 150, evalues: 134, pourcentage: 89 },
-            { nom: 'Yamoussoukro', effectif: 60, evalues: 0, pourcentage: 0 }
-        ];
+        const paysActuel = currentUser?.pays ?? '';
+        const paysUsers = ALL_USERS.filter(u => u.pays === paysActuel);
+        const sitesUniques = [...new Set(paysUsers.map(u => u.site))].filter(Boolean);
 
-        const effectifTotal = statsSites.reduce((acc, site) => acc + site.effectif, 0);
-        const effectifEvalue = statsSites.reduce((acc, site) => acc + site.evalues, 0);
-        const ratioGlobal = Math.round((effectifEvalue / effectifTotal) * 100) || 0;
+        const statsSites = sitesUniques.map(site => {
+            const users = paysUsers.filter(u => u.site === site);
+            const evalues = typeof window !== 'undefined'
+                ? users.filter(u => localStorage.getItem(`n1_eval_submitted_${u.id_usercount}`) === 'true').length
+                : 0;
+            return {
+                nom: site,
+                effectif: users.length,
+                evalues,
+                pourcentage: users.length > 0 ? Math.round((evalues / users.length) * 100) : 0
+            };
+        });
+
+        const effectifTotal = paysUsers.length;
+        const effectifEvalue = typeof window !== 'undefined'
+            ? paysUsers.filter(u => localStorage.getItem(`n1_eval_submitted_${u.id_usercount}`) === 'true').length
+            : 0;
+        const ratioGlobal = effectifTotal > 0 ? Math.round((effectifEvalue / effectifTotal) * 100) : 0;
 
         return (
             <div className="space-y-6 animate-in fade-in duration-300">

@@ -13,17 +13,19 @@ import { CoricaLogo } from '@/components/CoricaLogo';
 import { MyProfileMockup } from '@/components/mockups/MyProfileMockup';
 import { MyTeamMockup } from '@/components/mockups/MyTeamMockup';
 import { NineBoxModal } from '@/components/NineBoxModal';
-import { useUser } from '@/context/UserContext';
+import { useUser, ALL_USERS } from '@/context/UserContext';
 import { UserAvatar } from '@/components/UserAvatar';
 import { DownloadGuideButton } from '@/components/DownloadGuideButton';
 import { NavButtons } from '@/components/NavButtons';
 import { NotificationBell } from '@/components/NotificationBell';
 import { SkillsMatrixModule } from '@/components/skills/SkillsMatrixModule';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 
 type ViewMode = 'MY_PROFILE' | 'MY_TEAM' | 'SKILLS';
 
 
 export default function ManagerDashboard() {
+    useRoleGuard('Employe.10056@company.com');
     const router = useRouter();
     const { currentUser } = useUser();
     const [viewMode, setViewMode] = useState<ViewMode>('MY_TEAM');
@@ -97,8 +99,8 @@ export default function ManagerDashboard() {
                         <Users size={18} /> Mon Équipe ({currentUser ? 'N-1 rattachés' : '—'})
                     </button>
 
-                    {/* Bouton conditionnel vers N2 */}
-                    {currentUser?.route === '/manager-n2' && (
+                    {/* Bouton conditionnel vers N2 — visible si l'utilisateur est évaluateur N+2 de quelqu'un */}
+                    {currentUser && ALL_USERS.some(u => u.id_evaluateur_n2 === currentUser.id_usercount) && (
                         <button
                             onClick={() => router.push('/manager-n2')}
                             className="px-5 py-2 font-bold rounded-lg transition-all flex items-center gap-2 text-[#F26322] hover:bg-[#F26322]/10 border border-[#F26322]/20"

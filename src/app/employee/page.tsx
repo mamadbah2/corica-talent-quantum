@@ -16,6 +16,7 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { DownloadGuideButton } from '@/components/DownloadGuideButton';
 import { SkillsMatrixModule } from '@/components/skills/SkillsMatrixModule';
 import { printEvaluationForm } from '@/lib/printUtils';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend
@@ -26,6 +27,7 @@ type KpiStatus = 'DRAFT' | 'N1_PROPOSED' | 'MODIFIED_BY_EMP' | 'VALIDATED';
 type EmployeeView = 'PROFILE' | 'OBJECTIVES' | 'EVALUATION' | 'DASHBOARD' | 'SKILLS';
 
 export default function EmployeeDashboard() {
+    useRoleGuard('Employe.10057@company.com');
     const router = useRouter();
     const { currentUser, managerN1, managerN2, addNotification } = useUser();
     const [grade, setGrade] = useState<EmployeeGrade>('NON_CADRE');

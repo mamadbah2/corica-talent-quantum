@@ -16,10 +16,12 @@ import { useUser, ALL_USERS } from '@/context/UserContext';
 import { UserAvatar } from '@/components/UserAvatar';
 import { DownloadGuideButton } from '@/components/DownloadGuideButton';
 import { NavButtons } from '@/components/NavButtons';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 
 type ViewMode = 'MY_PROFILE' | 'MY_TEAM' | 'GROUP_ADMIN' | 'RAPPORT_CONSOLIDE';
 
 export default function GroupAdminDashboard() {
+    useRoleGuard('Employe.10087@company.com');
     const router = useRouter();
     const { currentUser } = useUser();
     const [viewMode, setViewMode] = useState<ViewMode>('GROUP_ADMIN');
@@ -82,42 +84,36 @@ export default function GroupAdminDashboard() {
 
     // ─── Vue : Rapport Consolidé de Pilotage (Groupe) ─────────────────────────
     const renderRapportConsolide = () => {
-        const statsPays = [
-            {
-                pays: "Côte d'Ivoire", effectif: 540, evalues: 499, pourcentage: 92,
-                sites: [
-                    { nom: "Bureau d'Abidjan", effectif: 120, evalues: 110, dec: 91 },
-                    { nom: 'Ity', effectif: 180, evalues: 170, dec: 94 },
-                    { nom: 'Sissengué', effectif: 90, evalues: 85, dec: 94 },
-                    { nom: 'Tongon', effectif: 150, evalues: 134, dec: 89 },
-                    { nom: 'Yamoussoukro', effectif: 60, evalues: 0, dec: 0 }
-                ]
-            },
-            {
-                pays: "Mali", effectif: 400, evalues: 320, pourcentage: 80,
-                sites: [
-                    { nom: 'Bureau de Bamako', effectif: 60, evalues: 58, dec: 96 },
-                    { nom: 'Baboto', effectif: 40, evalues: 38, dec: 95 },
-                    { nom: 'Goulamina', effectif: 80, evalues: 60, dec: 75 },
-                    { nom: 'Gounkoto', effectif: 90, evalues: 80, dec: 88 },
-                    { nom: 'Kobada', effectif: 30, evalues: 30, dec: 100 },
-                    { nom: 'Kayes', effectif: 20, evalues: 18, dec: 90 },
-                    { nom: 'Sadiola', effectif: 70, evalues: 65, dec: 92 },
-                    { nom: 'Syama', effectif: 120, evalues: 110, dec: 91 }
-                ]
-            },
-            {
-                pays: "Sénégal", effectif: 310, evalues: 310, pourcentage: 100,
-                sites: [
-                    { nom: 'Mine de Sabodala', effectif: 250, evalues: 250, dec: 100 },
-                    { nom: 'HQ Dakar', effectif: 60, evalues: 60, dec: 100 }
-                ]
-            }
-        ];
+        const paysUniques = [...new Set(ALL_USERS.map(u => u.pays))].filter(Boolean);
 
-        const effectifTotalGroupe = statsPays.reduce((acc, p) => acc + p.effectif, 0);
-        const effectifEvalueGroupe = statsPays.reduce((acc, p) => acc + p.evalues, 0);
-        const ratioGlobal = Math.round((effectifEvalueGroupe / effectifTotalGroupe) * 100) || 0;
+        const statsPays = paysUniques.map(pays => {
+            const paysUsers = ALL_USERS.filter(u => u.pays === pays);
+            const sitesUniques = [...new Set(paysUsers.map(u => u.site))].filter(Boolean);
+
+            const sites = sitesUniques.map(site => {
+                const siteUsers = paysUsers.filter(u => u.site === site);
+                const evalues = typeof window !== 'undefined'
+                    ? siteUsers.filter(u => localStorage.getItem(`n1_eval_submitted_${u.id_usercount}`) === 'true').length
+                    : 0;
+                return { nom: site, effectif: siteUsers.length, evalues, dec: siteUsers.length > 0 ? Math.round((evalues / siteUsers.length) * 100) : 0 };
+            });
+
+            const effectif = paysUsers.length;
+            const evalues = sites.reduce((a, s) => a + s.evalues, 0);
+            return {
+                pays,
+                effectif,
+                evalues,
+                pourcentage: effectif > 0 ? Math.round((evalues / effectif) * 100) : 0,
+                sites
+            };
+        });
+
+        const effectifTotalGroupe = ALL_USERS.length;
+        const effectifEvalueGroupe = typeof window !== 'undefined'
+            ? ALL_USERS.filter(u => localStorage.getItem(`n1_eval_submitted_${u.id_usercount}`) === 'true').length
+            : 0;
+        const ratioGlobal = effectifTotalGroupe > 0 ? Math.round((effectifEvalueGroupe / effectifTotalGroupe) * 100) : 0;
 
         return (
             <div className="space-y-6 animate-in fade-in duration-300">

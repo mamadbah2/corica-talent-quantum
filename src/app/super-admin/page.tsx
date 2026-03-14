@@ -19,6 +19,7 @@ import { NavButtons } from '@/components/NavButtons';
 import { NotificationBell } from '@/components/NotificationBell';
 import { GRCReportPreview } from '@/components/mockups/GRCReportPreview';
 import { HabilitationModal } from '@/components/mockups/HabilitationModal';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 
 interface Habilitation {
     id: string;
@@ -34,6 +35,7 @@ interface Habilitation {
 type ViewMode = 'MY_PROFILE' | 'MY_TEAM' | 'SUPER_ADMIN';
 
 export default function SuperAdminDashboard() {
+    useRoleGuard('Employe.12410@company.com');
     const router = useRouter();
     const { currentUser } = useUser();
     const [viewMode, setViewMode] = useState<ViewMode>('SUPER_ADMIN');

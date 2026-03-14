@@ -46,10 +46,19 @@ export default function LoginPage() {
     ];
     const DEFAULT_PASSWORD = 'COR-123';
 
-    // Simulation de redirection
+    // Kiosk login — find user by matricule and route to their dashboard
     const handleLogin = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
-        router.push('/');
+        const userId = parseInt(matricule, 10);
+        const user = ALL_USERS.find(u => u.id_usercount === userId);
+        if (user && pin.length === 4) {
+            setCurrentUser(user);
+            router.push(user.route);
+        } else if (!user) {
+            setErrorMsg('Matricule non reconnu.');
+        } else {
+            setErrorMsg('Veuillez saisir votre code PIN (4 chiffres).');
+        }
     };
 
     const handleDesktopLogin = async (e: React.FormEvent) => {
@@ -107,7 +116,14 @@ export default function LoginPage() {
             return;
         }
 
-        router.push('/');
+        // Route to the user's dashboard after password reset
+        const user = ALL_USERS.find(u => u.usercount.toLowerCase() === email.toLowerCase().trim());
+        if (user) {
+            setCurrentUser(user);
+            router.push(user.route);
+        } else {
+            router.push('/');
+        }
     };
 
     const handleNumpadPress = (num: number) => {

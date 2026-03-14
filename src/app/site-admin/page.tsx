@@ -16,6 +16,7 @@ import { useUser, ALL_USERS } from '@/context/UserContext';
 import { SiteManagementView } from '@/components/mockups/SiteManagementView';
 import { DownloadGuideButton } from '@/components/DownloadGuideButton';
 import { NavButtons } from '@/components/NavButtons';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 
 type ViewMode = 'MY_PROFILE' | 'MY_TEAM' | 'SITE_MGMT' | 'SITE_ADMIN' | 'REVISION_RH' | 'RAPPORT_PILOTAGE';
 type TeamSubView = 'LIST' | 'EVALUATE' | 'HISTORY';
@@ -59,6 +60,7 @@ function StarRating({ label, value, onChange }: { label: string; value: number; 
 
 // ─── Composant principal ─────────────────────────────────────────────────────
 export default function SiteAdminDashboard() {
+    useRoleGuard('Employe.10054@company.com');
     const router = useRouter();
     const { currentUser } = useUser();
     const [viewMode, setViewMode] = useState<ViewMode>('SITE_ADMIN');
@@ -489,16 +491,26 @@ export default function SiteAdminDashboard() {
 
     // ─── Vue : Rapport de Pilotage (Site) ──────────────────────────────
     const renderRapportPilotage = () => {
-        const statsDepartement = [
-            { nom: 'Opérations Minières', effectif: 40, evalues: 40, pourcentage: 100 },
-            { nom: 'Maintenance', effectif: 32, evalues: 27, pourcentage: 85 },
-            { nom: 'HSEQ', effectif: 24, evalues: 24, pourcentage: 100 },
-            { nom: 'Ressources Humaines', effectif: 16, evalues: 16, pourcentage: 100 }
-        ];
+        const siteUsers = ALL_USERS.filter(u => u.site === currentUser?.site);
+        const departements = [...new Set(siteUsers.map(u => u.departement))].filter(Boolean);
+        const statsDepartement = departements.map(dep => {
+            const users = siteUsers.filter(u => u.departement === dep);
+            const evalues = typeof window !== 'undefined'
+                ? users.filter(u => localStorage.getItem(`n1_eval_submitted_${u.id_usercount}`) === 'true').length
+                : 0;
+            return {
+                nom: dep,
+                effectif: users.length,
+                evalues,
+                pourcentage: users.length > 0 ? Math.round((evalues / users.length) * 100) : 0
+            };
+        });
 
-        const effectifTotal = statsDepartement.reduce((acc, dep) => acc + dep.effectif, 0);
-        const effectifEvalue = statsDepartement.reduce((acc, dep) => acc + dep.evalues, 0);
-        const ratioGlobal = Math.round((effectifEvalue / effectifTotal) * 100) || 0;
+        const effectifTotal = siteUsers.length;
+        const effectifEvalue = typeof window !== 'undefined'
+            ? siteUsers.filter(u => localStorage.getItem(`n1_eval_submitted_${u.id_usercount}`) === 'true').length
+            : 0;
+        const ratioGlobal = effectifTotal > 0 ? Math.round((effectifEvalue / effectifTotal) * 100) : 0;
 
         return (
             <div className="space-y-6 animate-in fade-in duration-300">

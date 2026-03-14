@@ -17,6 +17,7 @@ import { DownloadGuideButton } from '@/components/DownloadGuideButton';
 import { NavButtons } from '@/components/NavButtons';
 import { NotificationBell } from '@/components/NotificationBell';
 import { printEvaluationForm } from '@/lib/printUtils';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 
 const SCORE_LABELS: Record<number, { label: string; color: string }> = {
     1: { label: 'Faible', color: 'text-red-600 bg-red-50 border-red-200' },
@@ -26,6 +27,7 @@ const SCORE_LABELS: Record<number, { label: string; color: string }> = {
 };
 
 export default function ManagerN2Dashboard() {
+    useRoleGuard('Employe.10098@company.com');
     const router = useRouter();
     const { currentUser, addNotification } = useUser();
     const [viewMode, setViewMode] = useState<'N2_DASHBOARD' | 'MY_PROFILE' | 'MY_TEAM'>('N2_DASHBOARD');
