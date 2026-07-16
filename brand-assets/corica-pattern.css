@@ -1,0 +1,37 @@
+/* ============================================================
+   Motif CORICA — bande de hachures diagonales
+   2 façons de l'utiliser. Tout est local (intranet/air-gap).
+   ============================================================ */
+
+/* --- 1. EXACT (pixel-perfect) : l'image originale de marque ---
+   Orange #F26322 sur transparent. Idéal tel quel sur fond brun/clair. */
+.corica-band {
+  height: 26px;
+  background: url("corica-pattern-strip.png") repeat-x left center;
+  background-size: auto 100%;
+}
+
+/* --- 2. EXACT + RECOLORABLE : l'image originale en masque ---
+   Le motif prend la couleur de `background-color` (ou `color`).
+   Permet orange sur brun, blanc sur orange, brun sur blanc, etc. */
+.corica-band--mask {
+  height: 26px;
+  background-color: #F26322;                 /* ← couleur du motif */
+  -webkit-mask: url("corica-pattern-strip.png") repeat-x left center / auto 100%;
+          mask: url("corica-pattern-strip.png") repeat-x left center / auto 100%;
+}
+.corica-band--mask.is-white { background-color: #ffffff; }
+.corica-band--mask.is-brown { background-color: #463838; }
+
+/* --- 3. VECTORIEL (reproduction tuilable, recolorable, léger) ---
+   Reproduction SVG du motif. Net à toute taille, sans raster. */
+.corica-band--svg {
+  height: 26px;
+  background-color: #F26322;
+  -webkit-mask: url("corica-pattern.svg") repeat-x left center / auto 100%;
+          mask: url("corica-pattern.svg") repeat-x left center / auto 100%;
+}
+
+/* Épaisseurs utilitaires */
+.corica-band--thin  { height: 16px; }
+.corica-band--thick { height: 40px; }

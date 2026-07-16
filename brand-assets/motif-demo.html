@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
+<title>Motif CORICA — démo</title>
+<link rel="stylesheet" href="corica-pattern.css">
+<style>
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#fff;color:#463838}
+  h1{font-size:20px;margin:0} header{padding:26px 32px;border-bottom:1px solid #eee}
+  header p{margin:4px 0 0;color:#8a7f7f;font-size:13px}
+  section{padding:22px 32px} .lab{font-size:12px;letter-spacing:.04em;color:#8a7f7f;margin:0 0 8px;text-transform:uppercase}
+  .on-brown{background:#463838;padding:22px 32px}
+  .on-orange{background:#F26322;padding:22px 32px}
+</style></head><body>
+  <header><h1>Motif CORICA — bande de hachures diagonales</h1>
+  <p>Reproduit depuis corica.com · orange #F26322 · 100% local (intranet)</p></header>
+
+  <section>
+    <p class="lab">1 · Original exact (PNG de marque) sur fond brun</p>
+  </section>
+  <div class="on-brown"><div class="corica-band"></div></div>
+
+  <section>
+    <p class="lab">2 · Recolorable (PNG en masque) — blanc sur orange</p>
+  </section>
+  <div class="on-orange"><div class="corica-band--mask is-white"></div></div>
+
+  <section>
+    <p class="lab">3 · Recolorable — brun sur blanc</p>
+    <div class="corica-band--mask is-brown corica-band--thick"></div>
+  </section>
+
+  <section>
+    <p class="lab">4 · Reproduction vectorielle (SVG) — orange, fine</p>
+    <div class="corica-band--svg corica-band--thin"></div>
+  </section>
+
+  <section>
+    <p class="lab">5 · En séparateur de section (comme sur le site)</p>
+  </section>
+  <div class="on-brown" style="padding-bottom:0">
+    <div style="color:#fff;font-weight:800;font-size:28px;letter-spacing:-.01em">LOCAL KNOWLEDGE, <span style="color:#F26322">GLOBAL STANDARDS</span></div>
+    <div style="height:18px"></div>
+  </div>
+  <div class="corica-band--mask" style="height:22px"></div>
+</body></html>

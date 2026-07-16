@@ -52,3 +52,6 @@ cf-tunnel*
 serveo*
 pinggy*
 publicdocs/
+
+# scratch: extraction temporaire de .docx
+/ext/
