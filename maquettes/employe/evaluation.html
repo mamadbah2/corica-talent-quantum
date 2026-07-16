@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Mon Auto-Évaluation</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  /* Ajouts locaux à cet écran uniquement — n'altèrent pas assets/app.css.
+     Le pattern carte .objcards/.objcard (partagé avec competences.html) vit désormais dans assets/app.css. */
+
+  /* Zone dépôt de fichier (livrables) */
+  .dropzone {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-height: 72px; padding: 10px; text-align: center; cursor: pointer;
+    border: 1.5px dashed var(--line); background: var(--surface-2); color: var(--ink-faint);
+    transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
+  }
+  .dropzone:hover { border-color: var(--ink-faint); color: var(--ink-soft); background: var(--surface); }
+  .dropzone svg { width: 18px; height: 18px; }
+  .dropzone span { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.3; }
+  .objcard .textarea { min-height: 72px; font-size: 12.5px; padding: 8px 10px; }
+
+  /* Carte de synthèse (score moyen) */
+  .evalsummary {
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    background: var(--surface-2); border: 1px solid var(--line); padding: 18px 26px; margin: 22px 0 0;
+  }
+  .evalsummary__block { display: flex; flex-direction: column; gap: 4px; }
+  .evalsummary__block--right { align-items: flex-end; text-align: right; }
+  .evalsummary__label { font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
+  .evalsummary__value { font-size: 26px; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+  .evalsummary__value svg { width: 20px; height: 20px; fill: var(--ink); }
+  .evalsummary__value--ink { color: var(--ink); }
+
+  /* Footer d'écran — même fond/padding/bordure haute que la barre d'actions d'objectifs.html (§3). */
+  .evalfoot {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    margin-top: 20px; padding: 16px 20px; background: var(--surface-2); border-top: 1px solid var(--line);
+  }
+  .evalfoot__count { font-size: 13px; color: var(--ink-soft); font-weight: 500; }
+  .evalfoot__actions { display: flex; gap: 10px; }
+
+  /* Sélecteur de démonstration (aperçu des 2 états) — outil de revue uniquement, hors design final. */
+  .demo-switch {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 18px; padding: 8px 12px;
+    background: var(--surface); border: 1px dashed var(--line); font-size: 11.5px; color: var(--ink-faint);
+  }
+  .demo-switch b { color: var(--ink-soft); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; font-size: 10.5px; }
+  .demo-switch button {
+    padding: 5px 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft);
+    font-size: 11.5px; font-weight: 600; cursor: pointer;
+  }
+  .demo-switch button.is-on { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  /* État verrouillé : frise à 5 étapes (adaptée du .stepper générique, non cliquable ici) */
+  .lockstepper { display: flex; align-items: center; justify-content: center; gap: 0; margin: 4px 0 22px; flex-wrap: wrap; }
+  .lockstepper .step { padding-right: 22px; }
+  .lockstepper .step:not(:last-child)::after { width: 24px; }
+
+  .rail__logout {
+    margin-left: auto; width: 30px; height: 30px; flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rail-2); color: var(--rail-faint);
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+  /* Palette stricte : étape terminée en neutre encre (au lieu du vert --star de app.css) */
+  .step.is-done .step__n { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  /* Bloc avatar du rail-foot devenu lien vers le profil (§2). */
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+
+  /* Avatar de la topbar devenu lien vers le profil (§2). */
+  .avatar-link { display: inline-flex; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Espace Collaborateur</div>
+    <a class="navitem" href="dashboard.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM256 416c35.3 0 64-28.7 64-64c0-17.4-6.9-33.1-18.1-44.6L366 161.7c5.3-12.1-.2-26.3-12.3-31.6s-26.3 .2-31.6 12.3L257.9 288c-.6 0-1.3 0-1.9 0c-35.3 0-64 28.7-64 64s28.7 64 64 64zM176 144a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM96 288a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm352-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>
+      <span class="navlabel">Tableau de bord</span>
+    </a>
+    <a class="navitem" href="objectifs.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zm0 96a160 160 0 1 0 0 320 160 160 0 1 0 0-320zm0 96a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
+      <span class="navlabel">Mes objectifs de performance</span>
+    </a>
+    <a class="navitem is-active" href="evaluation.html">
+      <svg viewBox="0 0 384 512" fill="currentColor"><path d="M192 0c-41.8 0-77.4 26.7-90.5 64L64 64C28.7 64 0 92.7 0 128L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64l-37.5 0C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM305 273L177 401c-9.4 9.4-24.6 9.4-33.9 0L79 337c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L271 239c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>
+      <span class="navlabel">Mon auto-évaluation</span>
+    </a>
+    <a class="navitem" href="competences.html">
+      <svg viewBox="0 0 576 512" fill="currentColor"><path d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"/></svg>
+      <span class="navlabel">Mes Compétences &amp; Formation</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="profil.html" title="Voir mon profil">
+        <div class="avatar">AD</div>
+        <div class="who"><b>Anzoumana Diakité</b><small>EMPLOYE</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Mon Auto-Évaluation</h1>
+        <p>Évaluez votre performance sur vos objectifs approuvés</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <button class="btn btn--ghost">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9L0 168c0 13.3 10.7 24 24 24l110.1 0c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 74.5 75.1L75 75zm181 53c-13.3 0-24 10.7-24 24l0 104c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65 0-94.1c0-13.3-10.7-24-24-24z"/></svg>
+        Historique
+      </button>
+      <button class="btn btn--ghost">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M144 480L144 384L48 384c-26.5 0-48-21.5-48-48L0 176c0-26.5 21.5-48 48-48l32 0 0-80c0-26.5 21.5-48 48-48L336 0c26.5 0 48 21.5 48 48l0 80 32 0c26.5 0 48 21.5 48 48l0 160c0 26.5-21.5 48-48 48l-96 0 0 96c0 26.5-21.5 48-48 48l-96 0c-26.5 0-48-21.5-48-48zm48-96l0 96 96 0 0-96-96 0zm192-320L128 64l0 64 256 0 0-64z"/></svg>
+        Imprimer Fiche
+      </button>
+      <a class="avatar-link" href="profil.html" title="Mon profil"><div class="avatar avatar--sm">AD</div></a>
+    </header>
+
+    <div class="content">
+      <!-- Sélecteur de démonstration : bascule entre les deux états de cet écran (outil de revue, pas un composant de production). -->
+      <div class="demo-switch">
+        <b>Aperçu maquette</b>
+        <button type="button" class="is-on" data-demo-state="disponible">État A : Disponible</button>
+        <button type="button" data-demo-state="verrouille">État B : Verrouillé</button>
+      </div>
+
+      <!-- ============================================================
+           ÉTAT A — DISPONIBLE (objectifs validés, période ouverte)
+           Visible par défaut.
+      ============================================================= -->
+      <section id="etat-disponible">
+        <div class="objcards">
+
+          <!-- Objectif 1 -->
+          <section class="panel objcard">
+            <div class="objcard__head">
+              <span class="objcard__num">Objectif 1</span>
+              <p class="objcard__title">Maintenir un taux de disponibilité des équipements de production ≥ 92&nbsp;% sur le site de Sissengué.</p>
+            </div>
+            <p class="objcard__meta">Mesure&nbsp;: Taux de disponibilité mensuel (%), relevé sur le rapport maintenance du site. · Échéance&nbsp;: 31/12/2026</p>
+            <div class="objcard__row">
+              <div class="objcard__block objcard__block--eval">
+                <span class="objcard__label">Votre évaluation</span>
+                <div class="rating" data-rating>
+                  <button class="is-on">1</button><button>2</button><button>3</button><button>4</button>
+                </div>
+                <span class="eval-label">Faible</span>
+              </div>
+              <div class="objcard__block objcard__block--file">
+                <span class="objcard__label">Livrable</span>
+                <label class="dropzone">
+                  <svg viewBox="0 0 512 512" fill="currentColor"><path d="M144 480L144 384L48 384c-26.5 0-48-21.5-48-48L0 176c0-26.5 21.5-48 48-48l32 0 0-80c0-26.5 21.5-48 48-48L336 0c26.5 0 48 21.5 48 48l0 80 32 0c26.5 0 48 21.5 48 48l0 160c0 26.5-21.5 48-48 48l-96 0 0 96c0 26.5-21.5 48-48 48l-96 0c-26.5 0-48-21.5-48-48z"/></svg>
+                  <span>Joindre Fichier</span>
+                  <input type="file" hidden>
+                </label>
+              </div>
+              <div class="objcard__block objcard__block--comment">
+                <span class="objcard__label">Commentaire</span>
+                <textarea class="textarea" placeholder="Vos commentaires…"></textarea>
+              </div>
+            </div>
+          </section>
+
+          <!-- Objectif 2 -->
+          <section class="panel objcard">
+            <div class="objcard__head">
+              <span class="objcard__num">Objectif 2</span>
+              <p class="objcard__title">Réduire de 15&nbsp;% les arrêts non planifiés de la chaîne de concassage par rapport à la baseline 2025.</p>
+            </div>
+            <p class="objcard__meta">Mesure&nbsp;: Nombre d'arrêts non planifiés par mois, comparé à la baseline 2025 (registre d'exploitation). · Échéance&nbsp;: 31/12/2026</p>
+            <div class="objcard__row">
+              <div class="objcard__block objcard__block--eval">
+                <span class="objcard__label">Votre évaluation</span>
+                <div class="rating" data-rating>
+                  <button>1</button><button class="is-on">2</button><button>3</button><button>4</button>
+                </div>
+                <span class="eval-label">Passable</span>
+              </div>
+              <div class="objcard__block objcard__block--file">
+                <span class="objcard__label">Livrable</span>
+                <label class="dropzone" style="border-color:var(--ink-faint);background:var(--surface-2);color:var(--ink-soft)">
+                  <svg viewBox="0 0 384 512" fill="currentColor"><path d="M0 64C0 28.7 28.7 0 64 0L224 0l0 128c0 17.7 14.3 32 32 32l128 0 0 288c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 64zm384 64l-128 0L256 0 384 128z"/></svg>
+                  <span>Rapport_concassage_S2.pdf</span>
+                  <input type="file" hidden>
+                </label>
+              </div>
+              <div class="objcard__block objcard__block--comment">
+                <span class="objcard__label">Commentaire</span>
+                <textarea class="textarea" placeholder="Vos commentaires…">Amélioration continue depuis juillet grâce à la maintenance préventive renforcée.</textarea>
+              </div>
+            </div>
+          </section>
+
+          <!-- Objectif 3 -->
+          <section class="panel objcard">
+            <div class="objcard__head">
+              <span class="objcard__num">Objectif 3</span>
+              <p class="objcard__title">Atteindre zéro accident avec arrêt de travail (LTI) sur mon poste de production.</p>
+            </div>
+            <p class="objcard__meta">Mesure&nbsp;: Nombre de LTI enregistrés sur la période (objectif cible : 0), suivi HSE mensuel. · Échéance&nbsp;: 31/12/2026</p>
+            <div class="objcard__row">
+              <div class="objcard__block objcard__block--eval">
+                <span class="objcard__label">Votre évaluation</span>
+                <div class="rating" data-rating>
+                  <button>1</button><button>2</button><button>3</button><button class="is-on">4</button>
+                </div>
+                <span class="eval-label">Excellent</span>
+              </div>
+              <div class="objcard__block objcard__block--file">
+                <span class="objcard__label">Livrable</span>
+                <label class="dropzone">
+                  <svg viewBox="0 0 512 512" fill="currentColor"><path d="M144 480L144 384L48 384c-26.5 0-48-21.5-48-48L0 176c0-26.5 21.5-48 48-48l32 0 0-80c0-26.5 21.5-48 48-48L336 0c26.5 0 48 21.5 48 48l0 80 32 0c26.5 0 48 21.5 48 48l0 160c0 26.5-21.5 48-48 48l-96 0 0 96c0 26.5-21.5 48-48 48l-96 0c-26.5 0-48-21.5-48-48z"/></svg>
+                  <span>Joindre Fichier</span>
+                  <input type="file" hidden>
+                </label>
+              </div>
+              <div class="objcard__block objcard__block--comment">
+                <span class="objcard__label">Commentaire</span>
+                <textarea class="textarea" placeholder="Vos commentaires…">Zéro LTI sur toute la période. Référent HSE de l'équipe poste matin.</textarea>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Carte de synthèse -->
+        <div class="evalsummary">
+          <div class="evalsummary__block">
+            <span class="evalsummary__label">Note moyenne</span>
+            <div class="evalsummary__value">2,3/4 <svg viewBox="0 0 576 512"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg></div>
+          </div>
+          <div class="evalsummary__block evalsummary__block--right">
+            <span class="evalsummary__label">Objectifs évalués</span>
+            <div class="evalsummary__value evalsummary__value--ink">3/3</div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="evalfoot">
+          <div class="evalfoot__count">3 objectif(s) à évaluer</div>
+          <div class="evalfoot__actions">
+            <button class="btn btn--ghost">Fermer</button>
+            <button class="btn btn--ghost">
+              <svg viewBox="0 0 512 512" fill="currentColor"><path d="M470.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L192 338.7 425.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
+              Sauvegarder
+            </button>
+            <button class="btn btn--primary">
+              <svg viewBox="0 0 512 512" fill="currentColor"><path d="M470.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L192 338.7 425.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
+              Soumettre l'évaluation
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           ÉTAT B — VERROUILLÉ (objectifs soumis, en attente de validation N+1)
+           Masqué par défaut (display:none) ; basculé par le sélecteur de démo ci-dessus.
+      ============================================================= -->
+      <section id="etat-verrouille" style="display:none">
+        <section class="panel">
+          <div class="lock-state">
+            <div class="lock-state__head">
+              <svg viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
+              <h2>Auto-Évaluation non disponible</h2>
+            </div>
+            <p>Vos objectifs ont été soumis à votre Évaluateur N+1. En attente de sa validation avant de débloquer l'auto-évaluation.</p>
+
+            <div class="lockstepper">
+              <div class="step is-done"><span class="step__n">✓</span><span>En cours de rédaction des objectifs</span></div>
+              <div class="step is-current"><span class="step__n">2</span><span>En attente de validation N+1</span></div>
+              <div class="step"><span class="step__n">3</span><span>Auto-évaluation</span></div>
+              <div class="step"><span class="step__n">4</span><span>Évaluation N+1</span></div>
+              <div class="step"><span class="step__n">5</span><span>Calibration N+2</span></div>
+            </div>
+
+            <a href="objectifs.html" class="btn btn--primary">
+              <svg viewBox="0 0 512 512" fill="currentColor"><path d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64L0 400c0 44.2 35.8 80 80 80l400 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L80 416c-8.8 0-16-7.2-16-16L64 64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L242.7 218.7l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z"/></svg>
+              Aller à mes objectifs
+            </a>
+          </div>
+        </section>
+      </section>
+
+    </div>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+<script>
+  /* Bascule locale entre les deux états de démonstration de cet écran. */
+  (function () {
+    "use strict";
+    var btns = document.querySelectorAll("[data-demo-state]");
+    var states = { disponible: document.getElementById("etat-disponible"), verrouille: document.getElementById("etat-verrouille") };
+    btns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        btns.forEach(function (x) { x.classList.remove("is-on"); });
+        b.classList.add("is-on");
+        var key = b.getAttribute("data-demo-state");
+        Object.keys(states).forEach(function (k) {
+          if (states[k]) states[k].style.display = (k === key) ? "" : "none";
+        });
+      });
+    });
+  })();
+</script>
+</body>
+</html>

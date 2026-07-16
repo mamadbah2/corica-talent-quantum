@@ -1,0 +1,546 @@
+/* ============================================================
+   CORICA Talent Quantum — Design system (maquettes)
+   100% local, aucune ressource externe (intranet / air-gap).
+   Direction : Institutionnel net.
+   ============================================================ */
+
+:root {
+  /* Marque */
+  --corica-orange:        oklch(0.685 0.188 45);
+  --corica-orange-strong: oklch(0.610 0.190 42);
+  --corica-orange-soft:   oklch(0.955 0.030 60);
+  --corica-orange-ring:   oklch(0.685 0.188 45 / 0.30);
+  --on-orange:            oklch(0.200 0.020 50);   /* texte sur fond orange — brun encre profond, contraste AA ≥4.5:1 */
+
+  /* Neutres chauds */
+  --bg:        oklch(0.984 0.004 60);
+  --surface:   oklch(1.000 0.002 60);
+  --surface-2: oklch(0.970 0.005 60);
+  --ink:       oklch(0.255 0.012 55);
+  --ink-soft:  oklch(0.490 0.012 55);
+  --ink-faint: oklch(0.640 0.010 55);
+  --line:      oklch(0.910 0.006 60);
+  --line-soft: oklch(0.945 0.005 60);
+
+  /* Rail nav / héros — BRUN CORICA #463838 (identité réelle, plus gris-bleu froid) */
+  --rail:        oklch(0.355 0.014 32);
+  --rail-2:      oklch(0.415 0.017 34);
+  --rail-ink:    oklch(0.905 0.010 60);
+  --rail-faint:  oklch(0.730 0.014 50);
+
+  /* États sémantiques */
+  --star: oklch(0.640 0.150 145);
+  --core: oklch(0.620 0.130 230);
+  --grow: oklch(0.740 0.140 250);
+  --warn: oklch(0.770 0.140 80);
+  --risk: oklch(0.600 0.190 28);
+
+  --star-soft: oklch(0.960 0.040 145);
+  --core-soft: oklch(0.962 0.030 230);
+  --warn-soft: oklch(0.965 0.050 85);
+  --risk-soft: oklch(0.962 0.045 30);
+
+  /* Élévation */
+  --shadow-1: 0 1px 2px oklch(0.255 0.012 55 / 0.06), 0 1px 1px oklch(0.255 0.012 55 / 0.04);
+  --shadow-2: 0 1px 2px oklch(0.255 0.012 55 / 0.05), 0 12px 28px oklch(0.255 0.012 55 / 0.08);
+
+  /* Direction CORICA : tout carré (comme corica.com) — zéro arrondi. */
+  --r-lg: 0;
+  --r-md: 0;
+  --r-sm: 0;
+  --r-pill: 0;
+
+  --rail-w: 232px;
+  /* Corps de texte : Archivo (substitut libre auto-hébergé de "Korolev", la fonte de marque). */
+  --font: "Archivo", -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, system-ui, sans-serif;
+  /* Titres : Anton (substitut libre auto-hébergé de "Antarctican Headline" —
+     gothique industriel lourd et resserré, le plus fidèle après comparaison). */
+  --font-display: "Anton", "Archivo", "Segoe UI", var(--font);
+}
+
+/* Polices auto-hébergées — 100% locales (intranet/air-gap). */
+@font-face {
+  font-family: "Archivo";           /* corps de texte (≈ Korolev) — variable 100–900 latin */
+  src: url("fonts/Archivo-var.woff2") format("woff2-variations");
+  font-weight: 100 900; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Anton";             /* titres (≈ Antarctican Headline) — graisse unique */
+  src: url("fonts/Anton.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4 { margin: 0; line-height: 1.2; letter-spacing: -0.01em; }
+.num { font-variant-numeric: tabular-nums; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--corica-orange); width: 16px; height: 16px; }
+
+/* ---------- App shell ---------- */
+.app { display: grid; grid-template-columns: var(--rail-w) 1fr; min-height: 100vh; transition: grid-template-columns 220ms cubic-bezier(0.2,0.7,0.2,1); }
+.app.is-collapsed { grid-template-columns: 76px 1fr; }
+
+.rail {
+  background: var(--rail);
+  color: var(--rail-ink);
+  display: flex; flex-direction: column;
+  padding: 18px 14px;
+  gap: 4px;
+  position: sticky; top: 0; height: 100vh;
+}
+.rail__brand { display: flex; flex-direction: column; align-items: center; gap: 11px; padding: 4px 8px 16px; text-align: center; }
+.rail-logo { height: 38px; width: auto; }
+.rail-mark { height: 32px; width: auto; display: none; }
+.rail-product { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--rail-faint); font-weight: 600; }
+
+/* Bouton rétracter le rail */
+.rail__toggle {
+  display: flex; align-items: center; gap: 11px;
+  margin: 2px 0 8px; padding: 8px 11px;
+  background: transparent; border: 1px solid var(--rail-2);
+  color: var(--rail-faint); font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+.rail__toggle:hover { background: var(--rail-2); color: var(--rail-ink); }
+.rail__toggle svg { width: 15px; height: 15px; fill: currentColor; flex: none; transition: transform 220ms ease; }
+
+/* ---- État rétracté ---- */
+.is-collapsed .rail { padding: 18px 12px; align-items: center; }
+.is-collapsed .rail__brand { align-items: center; padding: 4px 0 16px; }
+.is-collapsed .rail-logo, .is-collapsed .rail-product,
+.is-collapsed .rail__group, .is-collapsed .navlabel,
+.is-collapsed .rail__foot .who { display: none; }
+.is-collapsed .rail-mark { display: block; }
+.is-collapsed .rail__toggle { justify-content: center; padding: 8px 0; width: 100%; }
+.is-collapsed .rail__toggle svg { transform: rotate(180deg); }
+.is-collapsed .navitem { justify-content: center; padding: 11px 0; }
+.is-collapsed .rail__foot { justify-content: center; }
+
+.rail__group { margin-top: 14px; padding: 0 8px 6px; font-size: 10.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--rail-faint); }
+.navitem {
+  display: flex; align-items: center; gap: 11px;
+  padding: 9px 11px; border-radius: var(--r-md);
+  color: var(--rail-ink); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: background 160ms ease, color 160ms ease;
+}
+.navitem svg { width: 18px; height: 18px; flex: none; opacity: 0.85; }
+.navitem:hover { background: var(--rail-2); }
+.navitem.is-active { background: var(--corica-orange); color: var(--on-orange); font-weight: 700; }
+.navitem.is-active svg { opacity: 1; }
+.rail__foot { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid var(--rail-2); }
+.rail__foot .avatar { width: 32px; height: 32px; }
+.rail__foot small { color: var(--rail-faint); font-size: 11.5px; }
+.rail__foot b { font-size: 13px; font-weight: 600; color: white; display: block; }
+
+/* ---------- Top bar ---------- */
+.main { display: flex; flex-direction: column; min-width: 0; }
+.topbar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 28px;
+  background: oklch(1 0.002 60 / 0.85);
+  backdrop-filter: none;
+  border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 5;
+}
+.topbar__title h1 { font-family: var(--font-display); font-weight: 400; font-size: 24px; letter-spacing: 0.005em; line-height: 1.1; }
+.topbar__title p { margin: 1px 0 0; font-size: 12.5px; color: var(--ink-soft); }
+.topbar__spacer { flex: 1; }
+.search {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--r-pill); padding: 8px 15px; min-width: 250px;
+  color: var(--ink-faint); font-size: 13.5px;
+}
+.search svg { width: 16px; height: 16px; }
+.iconbtn {
+  width: 38px; height: 38px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--surface);
+  display: grid; place-items: center; cursor: pointer; color: var(--ink-soft);
+  position: relative; transition: background 140ms ease;
+}
+.iconbtn:hover { background: var(--surface-2); }
+.iconbtn svg { width: 18px; height: 18px; }
+.iconbtn .dot { position: absolute; top: 8px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--corica-orange); border: 2px solid var(--surface); }
+
+.content { padding: 26px 28px 48px; }
+
+/* ---------- Avatar (neutre + carré : couleur réservée au statut, pas à l'identité) ---------- */
+.avatar {
+  width: 36px; height: 36px; background: var(--ink);
+  display: grid; place-items: center; color: white;
+  font-size: 13px; font-weight: 600; flex: none; letter-spacing: -0.02em;
+}
+.avatar--sm { width: 32px; height: 32px; font-size: 12px; }
+.avatar--xs { width: 30px; height: 30px; font-size: 11px; }
+
+/* ---------- Stat strip (bandeau sobre, pas de tuiles-cartes) ---------- */
+.statstrip {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  margin-bottom: 26px; border-bottom: 1px solid var(--line);
+}
+.stat { padding: 2px 30px 16px; display: flex; flex-direction: column; gap: 3px; border-right: 1px solid var(--line-soft); text-align: center; align-items: center; }
+.stat:last-child { border-right: none; }
+.stat__n { font-size: 27px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--ink); }
+.stat__u { font-size: 15px; color: var(--ink-faint); font-weight: 700; margin-left: 1px; }
+.stat__l { font-size: 12.5px; color: var(--ink-soft); font-weight: 500; }
+.stat__d { font-size: 11.5px; font-weight: 600; color: var(--ink-faint); }
+
+/* ---------- Panels ---------- */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-1); }
+.panel__head { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); }
+.panel__head h2 { font-size: 15.5px; font-weight: 700; }
+.panel__head .sub { font-size: 12.5px; color: var(--ink-soft); }
+.panel__body { padding: 20px; }
+.grid-2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 22px; align-items: start; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px; border-radius: var(--r-md);
+  font-size: 13.5px; font-weight: 600; cursor: pointer;
+  border: 1px solid transparent; transition: background 140ms ease, border-color 140ms ease, transform 80ms ease;
+}
+.btn svg { width: 16px; height: 16px; }
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: var(--corica-orange); color: var(--on-orange); font-weight: 700; }
+.btn--primary:hover { background: var(--corica-orange-strong); }
+.btn--ghost { background: var(--surface); border-color: var(--line); color: var(--ink); }
+.btn--ghost:hover { background: var(--surface-2); }
+.btn--block { width: 100%; justify-content: center; padding: 13px; font-size: 15px; }
+
+/* ---------- Badges / pills ---------- */
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--r-pill); font-size: 12px; font-weight: 600; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.9; }
+/* Statuts SANS couleur : distingués par le remplissage (palette stricte, orange = action). */
+.pill--closed { background: var(--ink); color: white; }
+.pill--closed::before { background: white; opacity: 0.85; }
+.pill--progress { background: transparent; color: var(--ink-soft); border: 1px solid var(--ink-faint); }
+.pill--progress::before { background: var(--ink-soft); }
+.pill--draft { background: var(--surface-2); color: var(--ink-faint); }
+.pill--draft::before { background: var(--ink-faint); }
+
+.tag { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.01em; }
+/* Catégories 9-box = mêmes tons neutres que la matrice (pas de couleur = pas d'action). */
+.tag--star { background: oklch(0.842 0.011 42); color: var(--ink); }
+.tag--core { background: oklch(0.892 0.008 46); color: var(--ink); }
+.tag--warn { background: oklch(0.928 0.006 50); color: var(--ink-soft); }
+.tag--risk { background: oklch(0.955 0.005 55); color: var(--ink-soft); border: 1px solid var(--line); }
+
+/* ---------- Table ---------- */
+.table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.table thead th {
+  position: sticky; top: 0; background: var(--rail);
+  text-align: left; font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--rail-ink); padding: 11px 16px; border-bottom: 1px solid var(--rail-2);
+}
+.table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); }
+.table tbody tr { transition: background 120ms ease; cursor: pointer; }
+.table tbody tr:hover { background: var(--surface-2); }
+.table tbody tr:last-child td { border-bottom: none; }
+.cell-person { display: flex; align-items: center; gap: 11px; }
+.cell-person b { font-weight: 600; font-size: 13.5px; }
+.cell-person small { display: block; color: var(--ink-soft); font-size: 12px; }
+
+/* ---------- 9-box grid ---------- */
+.ninebox { display: grid; grid-template-columns: 26px 1fr; grid-template-rows: 1fr 26px; gap: 8px; }
+.nb-yaxis { grid-column: 1; grid-row: 1; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+.nb-grid { grid-column: 2; grid-row: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 8px; aspect-ratio: 1.18; }
+.nb-xaxis { grid-column: 2; grid-row: 2; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); align-self: center; }
+.nb-cell { border-radius: var(--r-md); padding: 9px; display: flex; flex-direction: column; gap: 5px; border: 1px solid var(--line); position: relative; min-height: 86px; }
+.nb-cell .nb-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
+.nb-cell .nb-people { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; }
+.nb-chip { width: 28px; height: 28px; background: var(--ink); display: grid; place-items: center; color: white; font-size: 11px; font-weight: 700; cursor: grab; box-shadow: var(--shadow-1); transition: transform 120ms ease; }
+.nb-chip:hover { transform: scale(1.12); z-index: 2; }
+/* 9-box : échelle SÉQUENTIELLE NEUTRE (brun désaturé, l1 = faible → l4 = talent).
+   L'orange est réservé aux ACTIONS uniquement — ici, aucun orange. */
+.nb-l1 { background: oklch(0.975 0.004 60); } .nb-l1 .nb-label { color: var(--ink-faint); }
+.nb-l2 { background: oklch(0.938 0.006 52); } .nb-l2 .nb-label { color: var(--ink-soft); }
+.nb-l3 { background: oklch(0.892 0.008 46); } .nb-l3 .nb-label { color: var(--ink-soft); }
+.nb-l4 { background: oklch(0.842 0.011 42); } .nb-l4 .nb-label { color: var(--ink); }
+.nb--neutral { background: var(--surface-2); }
+.nb-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+.nb-legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-soft); font-weight: 500; }
+.nb-legend i { width: 11px; height: 11px; border: 1px solid var(--line); }
+.link-orange { color: var(--corica-orange); font-weight: 600; cursor: pointer; }
+
+/* ---------- Forms ---------- */
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 7px; }
+.input, .select, .textarea {
+  width: 100%; padding: 10px 13px; font-size: 14px; font-family: inherit; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--corica-orange); box-shadow: 0 0 0 3px var(--corica-orange-ring); }
+.textarea { resize: vertical; min-height: 88px; line-height: 1.55; }
+
+/* Rating scale */
+.rating { display: flex; gap: 7px; }
+.rating button {
+  flex: 1; padding: 12px 0; border-radius: var(--r-md); border: 1px solid var(--line);
+  background: var(--surface); cursor: pointer; font-weight: 700; font-size: 15px; color: var(--ink-soft);
+  transition: all 130ms ease;
+}
+.rating button:hover { border-color: var(--corica-orange); color: var(--ink); }
+.rating button.is-on { background: var(--corica-orange-soft); border: 1.5px solid var(--corica-orange); color: var(--ink); font-weight: 700; }
+.rating-foot { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-faint); margin-top: 6px; }
+
+/* Stepper */
+.stepper { display: flex; gap: 0; margin-bottom: 24px; }
+.step { display: flex; align-items: center; gap: 10px; padding-right: 28px; position: relative; }
+.step:not(:last-child)::after { content: ""; width: 34px; height: 1px; background: var(--line); margin-left: 14px; }
+.step__n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12.5px; font-weight: 700; background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--line); }
+.step.is-done .step__n { background: var(--star); color: white; border-color: var(--star); }
+.step.is-current .step__n { background: var(--corica-orange); color: var(--on-orange); border-color: var(--corica-orange); }
+.step span { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.step.is-current span { color: var(--ink); }
+
+/* ---------- Skills matrix ---------- */
+.matrix-wrap { overflow: auto; border: 1px solid var(--line); border-radius: var(--r-lg); }
+.matrix { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
+.matrix th, .matrix td { padding: 0; }
+.matrix thead th { position: sticky; top: 0; z-index: 3; background: var(--surface-2); border-bottom: 1px solid var(--line); padding: 11px 12px; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-align: center; min-width: 84px; }
+.matrix thead th.corner, .matrix tbody th { position: sticky; left: 0; z-index: 2; background: var(--surface); text-align: left; padding: 10px 14px; border-right: 1px solid var(--line); min-width: 210px; }
+.matrix thead th.corner { z-index: 4; }
+.matrix tbody td { text-align: center; border-bottom: 1px solid var(--line-soft); border-right: 1px solid var(--line-soft); }
+.lvl { display: block; height: 38px; line-height: 38px; font-weight: 700; font-size: 12.5px; }
+/* Niveaux de compétence = échelle séquentielle NEUTRE (identique à la 9-box). */
+.lvl-0 { background: var(--surface); color: var(--line); }
+.lvl-1 { background: oklch(0.975 0.004 60); color: var(--ink-faint); }
+.lvl-2 { background: oklch(0.938 0.006 52); color: var(--ink-soft); }
+.lvl-3 { background: oklch(0.892 0.008 46); color: var(--ink-soft); }
+.lvl-4 { background: oklch(0.842 0.011 42); color: var(--ink); }
+
+/* ---------- Skill bars ---------- */
+.skillrow { display: grid; grid-template-columns: 1fr 130px 40px; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+.skillrow:last-child { border-bottom: none; }
+.skillrow b { font-weight: 600; font-size: 13.5px; }
+.skillrow small { display: block; color: var(--ink-soft); font-size: 12px; }
+.bar { height: 8px; background: var(--surface-2); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--ink-soft); }
+
+/* ---------- Misc ---------- */
+.muted { color: var(--ink-soft); }
+.row { display: flex; align-items: center; gap: 12px; }
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+.chipfilter { padding: 7px 14px; border-radius: var(--r-pill); border: 1px solid var(--line); background: var(--surface); font-size: 13px; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
+.chipfilter.is-on { background: var(--ink); color: white; border-color: var(--ink); }
+.divider { height: 1px; background: var(--line-soft); margin: 18px 0; }
+
+/* ---------- Pagination ---------- */
+.pagination { display: flex; align-items: center; gap: 6px; padding: 14px 16px; border-top: 1px solid var(--line-soft); font-size: 13px; color: var(--ink-soft); }
+.pagination .pg-info { margin-right: auto; }
+.pagination button { min-width: 32px; height: 32px; padding: 0 9px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft); font-size: 13px; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
+.pagination button:hover { background: var(--surface-2); }
+.pagination button.is-on { background: var(--corica-orange); border-color: var(--corica-orange); color: var(--on-orange); font-weight: 700; }
+.pagination button:disabled { opacity: 0.4; cursor: default; }
+
+/* ---------- Modal (dialogue centré) ---------- */
+.modal-scrim { position: fixed; inset: 0; background: oklch(0.24 0.012 40 / 0.46); display: none; place-items: center; z-index: 30; padding: 24px; }
+.modal-scrim.is-open { display: grid; }
+.modal { background: var(--surface); border: 1px solid var(--line); box-shadow: 0 24px 64px oklch(0.2 0.01 40 / 0.28); width: 100%; max-width: 520px; max-height: 88vh; display: flex; flex-direction: column; }
+.modal--wide { max-width: 780px; }
+.modal__head { padding: 20px 24px; border-bottom: 1px solid var(--line); position: relative; }
+.modal__head h2 { font-size: 17px; font-weight: 700; }
+.modal__head p { font-size: 13px; color: var(--ink-soft); margin-top: 3px; }
+.modal__close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft); cursor: pointer; display: grid; place-items: center; }
+.modal__close:hover { background: var(--surface-2); }
+.modal__close svg { width: 14px; height: 14px; fill: currentColor; }
+.modal__body { padding: 22px 24px; overflow-y: auto; }
+.modal__foot { padding: 16px 24px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ---------- Panneau notifications ---------- */
+.notif-panel { position: absolute; top: 56px; right: 24px; width: 384px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 18px 48px oklch(0.2 0.01 40 / 0.18); z-index: 25; display: none; }
+.notif-panel.is-open { display: block; }
+.notif-panel__head { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 14px; }
+.notif-panel__head a { font-size: 12.5px; }
+.notif-item { padding: 13px 18px; border-bottom: 1px solid var(--line-soft); display: flex; gap: 11px; align-items: flex-start; cursor: pointer; }
+.notif-item:hover { background: var(--surface-2); }
+.notif-item__dot { width: 8px; height: 8px; background: var(--ink); margin-top: 6px; flex: none; }
+.notif-item.is-read .notif-item__dot { background: var(--line); }
+.notif-item p { font-size: 13.5px; line-height: 1.45; }
+.notif-item small { color: var(--ink-faint); font-size: 12px; }
+
+/* ---------- Cartes de rôle (portail) ---------- */
+.role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.role-card { background: var(--surface); padding: 26px 24px 22px; cursor: pointer; transition: background 140ms ease; display: flex; flex-direction: column; gap: 11px; min-height: 178px; }
+.role-card:hover { background: var(--surface-2); }
+.role-card__ic { width: 46px; height: 46px; background: var(--ink); display: grid; place-items: center; transition: background 140ms ease; }
+.role-card__ic svg { width: 22px; height: 22px; fill: white; }
+.role-card:hover .role-card__ic { background: var(--corica-orange); }
+.role-card h3 { font-size: 16px; font-weight: 700; }
+.role-card p { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+.role-card__go { margin-top: auto; color: var(--corica-orange); font-weight: 600; font-size: 13px; }
+
+/* ---------- Objectifs / KPI (mon espace) ---------- */
+.objrow { display: grid; grid-template-columns: 1fr 120px 90px; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line-soft); }
+.objrow:last-child { border-bottom: none; }
+.objrow b { font-weight: 600; font-size: 14px; }
+.objrow small { display: block; color: var(--ink-soft); font-size: 12px; margin-top: 1px; }
+.objrow .w { font-variant-numeric: tabular-nums; color: var(--ink-soft); font-weight: 600; font-size: 13px; text-align: right; }
+
+/* ---------- Drawer (fiche latérale) ---------- */
+.drawer-scrim { position: fixed; inset: 0; background: oklch(0.24 0.012 40 / 0.38); opacity: 0; visibility: hidden; transition: opacity 200ms ease; z-index: 19; }
+.drawer-scrim.is-open { opacity: 1; visibility: visible; }
+.drawer {
+  position: fixed; top: 0; right: 0; height: 100vh; width: 448px; max-width: 92vw;
+  background: var(--surface); border-left: 1px solid var(--line);
+  box-shadow: -10px 0 40px oklch(0.255 0.012 55 / 0.14);
+  transform: translateX(100%); transition: transform 260ms cubic-bezier(0.2,0.7,0.2,1);
+  z-index: 20; display: flex; flex-direction: column;
+}
+.drawer.is-open { transform: translateX(0); }
+.drawer__head { padding: 22px 24px 20px; border-bottom: 1px solid var(--line); position: relative; }
+.drawer__close { position: absolute; top: 18px; right: 18px; width: 32px; height: 32px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft); cursor: pointer; display: grid; place-items: center; }
+.drawer__close:hover { background: var(--surface-2); }
+.drawer__close svg { width: 14px; height: 14px; fill: currentColor; }
+.drawer__ident { display: flex; align-items: center; gap: 14px; }
+.drawer__ident .avatar { width: 52px; height: 52px; font-size: 18px; }
+.drawer__ident h2 { font-size: 18px; font-weight: 700; }
+.drawer__ident p { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+.drawer__body { padding: 4px 24px 24px; overflow-y: auto; flex: 1; }
+.drawer__foot { padding: 16px 24px; border-top: 1px solid var(--line); display: flex; gap: 10px; }
+.dsec { padding: 20px 0; border-bottom: 1px solid var(--line-soft); }
+.dsec:last-child { border-bottom: none; }
+.dsec__t { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 12px; }
+.dfact { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13.5px; }
+.dfact span { color: var(--ink-soft); }
+.dfact b { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---------- Motif de marque CORICA (hachures) — recolorable, pixel-perfect, 100% local ---------- */
+/* Bande séparatrice : couleur = background-color, forme = masque du motif officiel. */
+/* Séparateur = VRAI motif de marque CORICA (chevrons de hachures diagonales).
+   Le strip officiel fait 122px de haut : lui donner une hauteur suffisante
+   (≥28px) pour que le motif se lise, sinon il se compresse en bruit. */
+.corica-band {
+  height: 30px;
+  background-color: var(--corica-orange);
+  -webkit-mask: url("../../brand-assets/corica-pattern-strip.png") repeat-x left center / auto 100%;
+          mask: url("../../brand-assets/corica-pattern-strip.png") repeat-x left center / auto 100%;
+}
+/* Texture d'ambiance (héros brun) : hachures diagonales générées en CSS.
+   Reprend l'ANGLE du motif de marque (galon), mais en champ uniforme :
+   tuilage parfait dans tous les sens, aucune couture, recolorable via currentColor. */
+.corica-texture {
+  color: var(--corica-orange);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    currentColor 0 1.5px,
+    transparent 1.5px 14px
+  );
+}
+
+/* Titre display condensé bicolore (blanc/brun + orange) — signature CORICA. */
+.display { font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: 0.01em; line-height: 0.98; }
+.display .accent { color: var(--corica-orange); }
+
+/* ===== Patterns rôles (extensions) ===== */
+/* Ajouts ponctuels pour les écrans employé / manager / RH pays / partagés.
+   Rien ci-dessous ne modifie les règles existantes plus haut dans ce fichier. */
+
+/* ---------- Breadcrumb (fil d'Ariane léger) ----------
+   Exemple de markup :
+   <nav class="breadcrumb">
+     <a href="../portail.html"><svg viewBox="0 0 576 512" fill="currentColor"><path d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 16.2c0 22.1-17.9 40-40 40l-16 0c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1L416 512l-24 0c-22.1 0-40-17.9-40-40l0-24 0-64c0-17.7-14.3-32-32-32l-64 0c-17.7 0-32 14.3-32 32l0 64 0 24c0 22.1-17.9 40-40 40l-24 0-31.9 0c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2l-16 0c-22.1 0-40-17.9-40-40l0-112c0-.9 0-1.9 .1-2.8l0-69.7-32 0c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/></svg></a>
+     <span class="sep">›</span>
+     <a href="../collaborateurs.html">Collaborateurs</a>
+     <span class="sep">›</span>
+     <span class="is-current">Fiche évaluation</span>
+   </nav>
+   (icône maison en SVG plutôt qu'emoji, pour un rendu identique sur tous les postes). */
+.breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 12.5px; color: var(--ink-faint); }
+.breadcrumb a { display: inline-flex; align-items: center; color: var(--ink-soft); font-weight: 500; }
+.breadcrumb a:hover { color: var(--corica-orange); }
+.breadcrumb svg { width: 13px; height: 13px; fill: currentColor; }
+.breadcrumb .sep { color: var(--line); }
+.breadcrumb .is-current { color: var(--ink); font-weight: 600; }
+
+/* ---------- Gauge (jauge circulaire, anneau de progression) ----------
+   Exemple de markup (cercle r=40, circonférence ≈ 251 ; ajuster stroke-dasharray/offset selon %) :
+   <div class="gauge">
+     <svg viewBox="0 0 96 96">
+       <circle class="gauge__track" cx="48" cy="48" r="40"></circle>
+       <circle class="gauge__fill" cx="48" cy="48" r="40"
+               stroke-dasharray="251.2" stroke-dashoffset="62.8"></circle>
+     </svg>
+     <span class="gauge__value num">75%</span>
+   </div>
+   stroke-dashoffset = circonférence × (1 − valeur/100). Anneau sans arrondi (stroke-linecap: butt) pour rester cohérent avec la direction "tout carré". */
+.gauge { position: relative; display: inline-grid; place-items: center; width: 88px; height: 88px; }
+.gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.gauge circle { fill: none; stroke-width: 8; }
+.gauge .gauge__track { stroke: var(--line-soft); }
+.gauge .gauge__fill { stroke: var(--corica-orange); stroke-linecap: butt; transition: stroke-dashoffset 260ms ease; }
+.gauge__value { position: absolute; font-size: 18px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.gauge--sm { width: 56px; height: 56px; }
+.gauge--sm .gauge__value { font-size: 12.5px; }
+.gauge--sm circle { stroke-width: 6; }
+
+/* ---------- Campaign card (carte "campagne active") ----------
+   Variantes de statut via bandeau supérieur : --ok (var(--star)), --pending (var(--warn)), --closed (var(--ink-faint)).
+   Combiner avec .pill--closed / .pill--progress / .pill--draft (déjà définis plus haut) pour le libellé de statut. */
+.campaign-card { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-1); overflow: hidden; }
+.campaign-card__band { height: 5px; background: var(--ink-faint); }
+.campaign-card--ok .campaign-card__band { background: var(--star); }
+.campaign-card--pending .campaign-card__band { background: var(--warn); }
+.campaign-card--closed .campaign-card__band { background: var(--ink-faint); }
+.campaign-card__body { padding: 18px 20px; }
+.campaign-card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
+.campaign-card__head h3 { font-size: 15px; font-weight: 700; }
+.campaign-card__meta { font-size: 12.5px; color: var(--ink-soft); }
+.campaign-card__foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+
+/* ---------- Eval sheet (document officiel imprimable — fiche d'évaluation PDF) ---------- */
+.eval-sheet { background: var(--surface); border: 1px solid var(--line); max-width: 820px; margin: 0 auto; padding: 40px 48px; box-shadow: var(--shadow-2); }
+.eval-sheet__head { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 20px; margin-bottom: 24px; border-bottom: 2px solid var(--ink); }
+.eval-sheet__head img { height: 30px; }
+.eval-sheet__head h1 { font-family: var(--font-display); font-weight: 400; text-transform: uppercase; font-size: 20px; }
+.eval-sheet__meta { text-align: right; font-size: 12px; color: var(--ink-soft); line-height: 1.6; }
+.eval-sheet section { margin-bottom: 20px; border: 1px solid var(--line); }
+.eval-sheet section h2 { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); background: var(--surface-2); padding: 9px 16px; border-bottom: 1px solid var(--line); }
+.eval-sheet section .body { padding: 16px; font-size: 13.5px; line-height: 1.6; }
+.eval-sheet__sign { display: flex; justify-content: space-between; gap: 24px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }
+.eval-sheet__sign div { flex: 1; text-align: center; font-size: 12px; color: var(--ink-soft); }
+.eval-sheet__sign .line { height: 1px; background: var(--ink-faint); margin: 32px 0 8px; }
+@media print { .eval-sheet { box-shadow: none; border: none; } }
+
+/* ---------- Lock state (accès verrouillé) ---------- */
+.lock-state { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; padding: 64px 24px; color: var(--ink-soft); }
+.lock-state__head { display: flex; align-items: center; gap: 12px; text-align: left; }
+.lock-state__head svg { flex: none; width: 26px; height: 26px; fill: var(--ink-faint); }
+.lock-state h2, .lock-state h3 { font-size: 18px; font-weight: 700; color: var(--ink); }
+.lock-state p { font-size: 13px; max-width: 360px; line-height: 1.5; }
+
+/* ===== Cartes d'auto-évaluation (partagé) ===== */
+/* Pattern carte commun aux écrans « Mon auto-évaluation » (objectifs) et « Mes Compétences »
+   (auto-évaluation des compétences) : même geste métier (se noter 1 à 4) → même format visuel.
+   .objcard s'appuie sur .panel pour le conteneur (fond/bordure/carré) ; ici uniquement les compléments. */
+.objcards { display: flex; flex-direction: column; gap: 16px; }
+.objcard { padding: 20px; }
+.objcard__head { display: flex; align-items: flex-start; gap: 12px; }
+.objcard__num {
+  flex: none; margin-top: 2px; white-space: nowrap;
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--ink-faint); background: var(--surface-2); border: 1px solid var(--line); padding: 4px 9px;
+}
+.objcard__title { font-size: 14.5px; font-weight: 700; color: var(--ink); line-height: 1.45; }
+.objcard__meta { font-size: 12px; color: var(--ink-soft); margin: 8px 0 0; }
+.objcard__row { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line-soft); }
+.objcard__block { display: flex; flex-direction: column; gap: 8px; }
+.objcard__block--eval { flex: 0 0 260px; }
+.objcard__block--file { flex: 1 1 220px; max-width: 260px; }
+.objcard__block--comment { flex: 1 1 100%; }
+.objcard__label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
+.objcard .eval-label { font-size: 11.5px; font-weight: 700; color: var(--ink-soft); }

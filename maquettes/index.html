@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum — Maquettes</title>
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  body { padding: 48px 24px; }
+  .wrap { max-width: 920px; margin: 0 auto; }
+  .head { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .head .brandmark { width: 44px; height: 44px; font-size: 18px; border-radius: 11px; }
+  .head h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+  .lead { color: var(--ink-soft); margin: 0 0 32px 60px; font-size: 14px; }
+  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .card { display: block; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; box-shadow: var(--shadow-1); transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease; }
+  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); border-color: oklch(0.86 0.04 60); }
+  .card .ic { width: 42px; height: 42px; border-radius: 10px; background: var(--corica-orange-soft); display: grid; place-items: center; margin-bottom: 14px; }
+  .card .ic svg { width: 21px; height: 21px; color: var(--corica-orange-strong); }
+  .card h3 { font-size: 16px; font-weight: 700; }
+  .card p { margin: 6px 0 0; font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  .card .n { font-size: 12px; font-weight: 700; color: var(--corica-orange); text-transform: uppercase; letter-spacing: 0.05em; }
+  .foot { margin-top: 34px; font-size: 12.5px; color: var(--ink-faint); text-align: center; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><div class="brandmark">C</div><h1>Talent Quantum — Maquettes</h1></div>
+    <p class="lead">Direction « Institutionnel net ». HTML / CSS / vanilla JS, 100 % local (compatible intranet). Cliquez pour ouvrir chaque écran.</p>
+    <div class="cards">
+      <a class="card" href="login.html">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Z"/></svg></div>
+        <span class="n">01 · Accès</span>
+        <h3>Connexion</h3>
+        <p>SSO Office 365 (Entra ID) + mode kiosque avec pavé PIN pour les sites miniers.</p>
+      </a>
+      <a class="card" href="dashboard.html">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></div>
+        <span class="n">02 · Pilotage</span>
+        <h3>Tableau de bord &amp; 9-Box</h3>
+        <p>Matrice talents performance × potentiel, statistiques de campagne, évaluations récentes.</p>
+      </a>
+      <a class="card" href="evaluation.html">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <span class="n">03 · Workflow</span>
+        <h3>Formulaire d'évaluation</h3>
+        <p>Parcours par étapes, notation par critères (dont HSE), contexte collaborateur, mention légale.</p>
+      </a>
+      <a class="card" href="competences.html">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg></div>
+        <span class="n">04 · Compétences</span>
+        <h3>Matrice de compétences</h3>
+        <p>Couverture par compétence et par collaborateur, écarts critiques, plans de développement.</p>
+      </a>
+    </div>
+
+    <h2 style="font-size:15px;font-weight:800;letter-spacing:-0.01em;margin:40px 0 4px;">Parcours par rôle</h2>
+    <p class="lead" style="margin:0 0 20px 0;">Chaque rôle maquetté de bout en bout, fidèle à l'application. Rôle 1 sur 3 livré.</p>
+    <div class="cards">
+      <a class="card" href="employe/dashboard.html">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+        <span class="n">Rôle 1 · Employé</span>
+        <h3>👤 Espace Collaborateur</h3>
+        <p>5 écrans : Tableau de bord (accueil) · Mes objectifs de performance · Mon auto-évaluation · Mes Compétences &amp; Formation · Mon Profil (accès via l'avatar).</p>
+      </a>
+      <div class="card" style="cursor:default;background:var(--surface-2);">
+        <div class="ic" style="background:var(--surface-2);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <span class="n">Rôles 2 &amp; 3 · à venir</span>
+        <h3>👔 Manager N+1 · 🌍 RH Pays</h3>
+        <p>Prochaines phases : évaluation d'équipe, 9-Box talents, pilotage de la campagne nationale.</p>
+      </div>
+    </div>
+
+    <p class="foot">CORICA Mining Services · Maquette de présentation — non connectée (données fictives)</p>
+  </div>
+</body>
+</html>

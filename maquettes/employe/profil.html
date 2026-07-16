@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Mon Profil</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  /* Extensions locales à cet écran (aucune modification d'app.css) :
+     bordures d'accent des 4 cartes, champs lecture seule, zone photo, bouton déconnexion du rail. */
+  .stack { display: flex; flex-direction: column; gap: 22px; }
+
+  .panel--orange,
+  .panel--olive,
+  .panel--brun,
+  .panel--brun50 { border: 1px solid var(--line); }
+
+  .panel__head h2 { display: flex; align-items: center; gap: 9px; }
+  .panel__head svg { width: 16px; height: 16px; flex: none; }
+  .panel--orange .panel__head svg,
+  .panel--olive  .panel__head svg,
+  .panel--brun   .panel__head svg,
+  .panel--brun50 .panel__head svg { fill: var(--corica-orange); }
+
+  .span2 { grid-column: 1 / -1; }
+  .field__hint { font-size: 12px; font-weight: 500; color: var(--ink-soft); }
+  .input--ro { background: var(--surface-2); color: var(--ink-faint); cursor: not-allowed; }
+
+  /* Mention de gouvernance sur les cartes dont les champs sont gérés par le RH du site. */
+  .rohint { font-size: 12px; color: var(--ink-soft); margin: -6px 0 18px; }
+
+  .photozone {
+    display: flex; align-items: center; gap: 20px;
+    padding: 16px; margin-bottom: 22px;
+    border: 1px dashed oklch(0.685 0.188 45 / 0.4);
+    background: var(--corica-orange-soft);
+  }
+  .photozone__pic {
+    width: 76px; height: 76px; flex: none;
+    background: var(--corica-orange); color: white;
+    display: grid; place-items: center; font-size: 21px; font-weight: 800; letter-spacing: -0.02em;
+  }
+  .photozone__label { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+  .photozone__note { font-size: 12px; color: var(--ink-soft); margin-bottom: 12px; }
+
+  .actionsfoot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+
+  .rail__logout {
+    margin-left: auto; width: 30px; height: 30px; flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rail-2); color: var(--rail-faint);
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+
+  /* Bloc avatar du rail-foot devenu lien vers le profil (§2) — état actif permanent sur cet écran. */
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+  .rail__me.is-active { background: var(--rail-2); }
+  .rail__me.is-active small { color: var(--rail-ink); }
+
+  /* Avatar de la topbar devenu lien vers le profil (§2). */
+  .avatar-link { display: inline-flex; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Espace Collaborateur</div>
+    <a class="navitem" href="dashboard.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM256 416c35.3 0 64-28.7 64-64c0-17.4-6.9-33.1-18.1-44.6L366 161.7c5.3-12.1-.2-26.3-12.3-31.6s-26.3 .2-31.6 12.3L257.9 288c-.6 0-1.3 0-1.9 0c-35.3 0-64 28.7-64 64s28.7 64 64 64zM176 144a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM96 288a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm352-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>
+      <span class="navlabel">Tableau de bord</span>
+    </a>
+    <a class="navitem" href="objectifs.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zm0 96a160 160 0 1 0 0 320 160 160 0 1 0 0-320zm0 96a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
+      <span class="navlabel">Mes objectifs de performance</span>
+    </a>
+    <a class="navitem" href="evaluation.html">
+      <svg viewBox="0 0 384 512" fill="currentColor"><path d="M192 0c-41.8 0-77.4 26.7-90.5 64L64 64C28.7 64 0 92.7 0 128L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64l-37.5 0C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM305 273L177 401c-9.4 9.4-24.6 9.4-33.9 0L79 337c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L271 239c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>
+      <span class="navlabel">Mon auto-évaluation</span>
+    </a>
+    <a class="navitem" href="competences.html">
+      <svg viewBox="0 0 576 512" fill="currentColor"><path d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"/></svg>
+      <span class="navlabel">Mes Compétences &amp; Formation</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me is-active" href="profil.html" title="Voir mon profil">
+        <div class="avatar">AD</div>
+        <div class="who"><b>Anzoumana Diakité</b><small>EMPLOYE</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Mon Profil</h1>
+        <p>Consultez vos informations personnelles et professionnelles</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <button class="iconbtn js-notif"><span class="dot"></span>
+        <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224 0c-17.7 0-32 14.3-32 32l0 19.2C119 66 64 130.6 64 208l0 18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416l384 0c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8l0-18.8c0-77.4-55-142-128-156.8L256 32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3l-64 0-64 0c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"/></svg>
+      </button>
+      <a class="avatar-link" href="profil.html" title="Mon profil"><div class="avatar avatar--sm">AD</div></a>
+    </header>
+
+    <div class="content">
+      <div class="stack">
+        <!-- Carte 1 : Informations Personnelles -->
+        <section class="panel panel--orange">
+          <div class="panel__head">
+            <h2>
+              <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>
+              Informations Personnelles
+            </h2>
+          </div>
+          <div class="panel__body">
+            <div class="photozone">
+              <div class="photozone__pic">AD</div>
+              <div>
+                <p class="photozone__label">Photo de Profil</p>
+                <p class="photozone__note">Formats acceptés : JPG, PNG, WEBP (5 Mo max)</p>
+                <button class="btn btn--ghost" type="button">Changer la photo</button>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label>Matricule <span class="field__hint">(non modifiable)</span></label>
+                <input class="input input--ro" type="text" value="10057" readonly>
+              </div>
+              <div class="field">
+                <label>Nom et Prénoms</label>
+                <input class="input input--ro" type="text" value="Anzoumana Diakité" readonly>
+              </div>
+              <div class="field">
+                <label>Date de Naissance</label>
+                <input class="input input--ro" type="text" value="12/04/1988" readonly>
+              </div>
+              <div class="field">
+                <label>Email professionnel <span class="field__hint">(identifiant de connexion)</span></label>
+                <input class="input input--ro" type="email" value="Employe.10057@company.com" readonly>
+              </div>
+              <div class="field span2">
+                <label>Numéro de Téléphone</label>
+                <input class="input" type="tel" placeholder="+225 XX XX XX XX XX">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Carte 2 : Informations Professionnelles -->
+        <section class="panel panel--olive">
+          <div class="panel__head">
+            <h2>
+              <svg viewBox="0 0 512 512" fill="currentColor"><path d="M184 48l144 0c4.4 0 8 3.6 8 8l0 40L176 96l0-40c0-4.4 3.6-8 8-8zm-56 8l0 40L64 96C28.7 96 0 124.7 0 160l0 96 192 0 128 0 192 0 0-96c0-35.3-28.7-64-64-64l-64 0 0-40c0-30.9-25.1-56-56-56L184 0c-30.9 0-56 25.1-56 56zM320 288l-128 0 0 32c0 17.7 14.3 32 32 32l64 0c17.7 0 32-14.3 32-32l0-32zm192-32l-160 0 0 32c0 35.3-28.7 64-64 64l-64 0c-35.3 0-64-28.7-64-64l0-32L0 256 0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-160z"/></svg>
+              Informations Professionnelles
+            </h2>
+          </div>
+          <div class="panel__body">
+            <p class="rohint">Ces informations sont gérées par le RH de votre site.</p>
+            <div class="grid-2">
+              <div class="field">
+                <label>Fonction / Poste Occupé</label>
+                <input class="input input--ro" type="text" value="EMPLOYE" readonly>
+              </div>
+              <div class="field">
+                <label>Date d'Embauche</label>
+                <input class="input input--ro" type="text" value="01/09/2015" readonly>
+              </div>
+              <div class="field">
+                <label>Pays d'Affectation</label>
+                <input class="input input--ro" type="text" value="Côte d'Ivoire" readonly>
+              </div>
+              <div class="field">
+                <label>Site ou Bureau d'Affectation</label>
+                <input class="input input--ro" type="text" value="Sissengué" readonly>
+              </div>
+              <div class="field">
+                <label>Département</label>
+                <input class="input input--ro" type="text" value="PRODUCTION" readonly>
+              </div>
+              <div class="field">
+                <label>Service d'Affectation</label>
+                <input class="input input--ro" type="text" value="Exploitation Minière" readonly>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Carte 3 : Manager Direct (Évaluateur N+1) -->
+        <section class="panel panel--brun">
+          <div class="panel__head">
+            <h2>
+              <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>
+              Manager Direct (Évaluateur N+1)
+            </h2>
+          </div>
+          <div class="panel__body">
+            <p class="rohint">Votre évaluateur est défini par le RH de votre site.</p>
+            <div class="grid-2">
+              <div class="field span2">
+                <label>Manager Direct</label>
+                <input class="input input--ro" type="text" value="Mamadou Traore · PROJECT MANAGER" readonly>
+              </div>
+              <div class="field">
+                <label>Email</label>
+                <input class="input input--ro" type="text" value="Mamadou.Traore@company.com" readonly>
+              </div>
+              <div class="field">
+                <label>Département</label>
+                <input class="input input--ro" type="text" value="PRODUCTION" readonly>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Carte 4 : Manager N+2 (Calibration) -->
+        <section class="panel panel--brun50">
+          <div class="panel__head">
+            <h2>
+              <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>
+              Manager N+2 (Calibration)
+            </h2>
+          </div>
+          <div class="panel__body">
+            <p class="rohint">Le comité de calibration N+2 est défini par le RH.</p>
+            <div class="grid-2">
+              <div class="field span2">
+                <label>Manager N+2</label>
+                <input class="input input--ro" type="text" value="Jean-Baptiste Yao · DIRECTEUR DE SITE" readonly>
+              </div>
+              <div class="field">
+                <label>Email</label>
+                <input class="input input--ro" type="text" value="JeanBaptiste.Yao@company.com" readonly>
+              </div>
+              <div class="field">
+                <label>Fonction / Poste Occupé</label>
+                <input class="input input--ro" type="text" value="DIRECTEUR DE SITE" readonly>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="actionsfoot">
+        <a class="btn btn--ghost" href="dashboard.html">Retour Menu</a>
+        <button class="btn btn--primary" type="button">Enregistrer les modifications</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+</body>
+</html>

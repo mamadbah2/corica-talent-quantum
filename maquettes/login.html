@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum — Connexion</title>
+<link rel="stylesheet" href="assets/app.css?v=5">
+<style>
+  body {
+    background:
+      radial-gradient(1100px 560px at 80% -12%, oklch(0.955 0.030 60), transparent 58%),
+      radial-gradient(820px 480px at -5% 112%, oklch(0.962 0.020 50), transparent 55%),
+      var(--bg);
+    display: grid; place-items: center; min-height: 100vh; padding: 24px; }
+  .login { width: 100%; max-width: 960px; display: grid; grid-template-columns: 1.02fr 1fr;
+    background: var(--surface); border: 1px solid var(--line);
+    box-shadow: var(--shadow-2); overflow: hidden; }
+
+  /* ---------- Brand side (héros PHOTO — empreinte CORICA) ---------- */
+  .login__brand { position: relative; color: white;
+    padding: 38px 40px 32px; display: flex; flex-direction: column; overflow: hidden;
+    min-height: 620px; }
+  /* Photo de marque full-bleed (portrait humain — talent CORICA) */
+  .login__brand .hero-photo { position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: 72% 42%; }
+  /* Pas de filtre coloré : la photo reste franche. Simple fondu NEUTRE (noir)
+     en bas seulement, pour la lisibilité du titre. */
+  .login__brand .scrim { position: absolute; inset: 0; pointer-events: none;
+    background:
+      linear-gradient(180deg,
+        transparent 0%,
+        transparent 52%,
+        rgba(0,0,0,0.28) 76%,
+        rgba(0,0,0,0.68) 100%); }
+  .login__brand > *:not(.hero-photo):not(.scrim) { position: relative; z-index: 1; }
+  .login__brand .logo { height: 40px; width: auto; }
+  .login__brand .spacer { flex: 1; }
+  .login__brand .headline { font-size: 60px; margin-bottom: 4px; }
+  .login__brand .headline span { display: block; color: white; font-weight: 400;
+    letter-spacing: 0.005em; line-height: 0.92; text-shadow: 0 2px 24px rgba(0,0,0,0.35); }
+  .login__brand .headline .accent { color: var(--corica-orange); }
+  .login__brand .lead { color: rgba(255,255,255,0.82); font-size: 14px; margin-top: 14px;
+    max-width: 32ch; line-height: 1.55; }
+  .login__brand .band { margin: 20px 0 22px; width: 208px; opacity: 0.95; }
+  .login__feat { display: flex; flex-direction: column; gap: 13px; }
+  .login__feat div { display: flex; align-items: center; gap: 12px; font-size: 13.5px;
+    color: rgba(255,255,255,0.90); }
+  .login__feat .ic { width: 34px; height: 34px; border-radius: 9px; flex: none;
+    background: rgba(255,255,255,0.12); backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.14); display: grid; place-items: center; }
+  .login__feat svg { width: 16px; height: 16px; fill: var(--corica-orange); }
+  .login__brand .tagline { margin-top: 24px; font-family: var(--font-display);
+    font-size: 15px; letter-spacing: 0.03em; text-transform: uppercase;
+    color: rgba(255,255,255,0.72); }
+  .login__brand .tagline b { color: var(--corica-orange); font-weight: 400; }
+
+  /* ---------- Form side ---------- */
+  .login__form { padding: 42px 40px; display: flex; flex-direction: column; }
+  .modeswitch { display: flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-pill); padding: 4px; margin-bottom: 28px; }
+  .modeswitch button { flex: 1; padding: 9px; border: none; background: transparent; border-radius: var(--r-pill); font-weight: 600; font-size: 13.5px; color: var(--ink-soft); cursor: pointer; transition: all 160ms ease; }
+  .modeswitch button.is-on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
+  .login__form h2 { font-size: 21px; font-weight: 700; }
+  .login__form .sub { color: var(--ink-soft); font-size: 13.5px; margin: 6px 0 26px; }
+  .sso-btn { display: flex; align-items: center; justify-content: center; gap: 11px; width: 100%; padding: 14px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }
+  .sso-btn:hover { background: var(--surface-2); border-color: var(--ink-faint); }
+  .ms-logo { width: 19px; height: 19px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+  .ms-logo i { display: block; }
+  .ms-logo i:nth-child(1){ background:#f25022 } .ms-logo i:nth-child(2){ background:#7fba00 }
+  .ms-logo i:nth-child(3){ background:#00a4ef } .ms-logo i:nth-child(4){ background:#ffb900 }
+  .or { display: flex; align-items: center; gap: 14px; color: var(--ink-faint); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; margin: 22px 0; }
+  .or::before, .or::after { content: ""; height: 1px; background: var(--line); flex: 1; }
+  .hint { font-size: 12px; color: var(--ink-faint); text-align: center; margin-top: 22px; line-height: 1.6; }
+
+  /* Kiosk */
+  .kiosk { display: none; }
+  .pindisplay { display: flex; gap: 12px; justify-content: center; margin: 10px 0 22px; }
+  .pindot { width: 15px; height: 15px; border: 2px solid var(--line); transition: all 140ms ease; }
+  .pindot.is-filled { background: var(--corica-orange); border-color: var(--corica-orange); }
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; }
+  .keypad button { padding: 18px 0; font-size: 21px; font-weight: 700; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-md); cursor: pointer; color: var(--ink); transition: background 120ms ease, border-color 120ms ease; font-variant-numeric: tabular-nums; }
+  .keypad button:hover { background: var(--surface-2); }
+  .keypad button:active { background: var(--corica-orange-soft); border-color: var(--corica-orange); }
+  .keypad button.k-act { font-size: 14px; color: var(--ink-soft); font-weight: 600; }
+
+  @media (max-width: 780px){ .login{ grid-template-columns: 1fr } .login__brand{ display:none } }
+</style>
+</head>
+<body>
+  <div class="login">
+    <!-- Brand / héros PHOTO CORICA (mains / humanité) -->
+    <aside class="login__brand">
+      <img class="hero-photo" src="../brand-assets/hero-portrait.jpg" alt="">
+      <div class="scrim"></div>
+      <img class="logo" src="../brand-assets/corica-logo-white.svg" alt="CORICA Mining Services">
+      <div class="spacer"></div>
+      <h1 class="display headline"><span>Talent</span><span class="accent">Quantum</span></h1>
+      <p class="lead">Gestion des talents et de la performance — CORICA Mining Services.</p>
+      <div class="band corica-band"></div>
+      <p class="tagline">Local knowledge, <b>global standards</b></p>
+    </aside>
+
+    <!-- Form -->
+    <section class="login__form">
+      <!-- Desktop / SSO -->
+      <div class="desktop">
+        <h2>Bienvenue</h2>
+        <p class="sub">Connectez-vous avec votre compte professionnel CORICA.</p>
+        <button class="sso-btn" onclick="alert('Redirection vers Microsoft Entra ID (O365)…')">
+          <span class="ms-logo"><i></i><i></i><i></i><i></i></span>
+          Se connecter avec Office 365
+        </button>
+        <div class="or">accès délégué</div>
+        <div class="field"><label>Adresse e-mail CORICA</label><input class="input" type="email" placeholder="prenom.nom@corica.com"></div>
+        <div class="field"><label>Mot de passe</label><input class="input" type="password" placeholder="••••••••"></div>
+        <button class="btn btn--primary btn--block">Continuer</button>
+      </div>
+
+      <!-- Kiosk -->
+      <div class="kiosk">
+        <h2>Accès site</h2>
+        <p class="sub">Saisissez votre matricule, puis votre code PIN.</p>
+        <div class="field"><label>Matricule</label><input class="input num" inputmode="numeric" placeholder="10057"></div>
+        <label style="font-size:12.5px;font-weight:600;color:var(--ink-soft)">Code PIN</label>
+        <div class="pindisplay" id="pins">
+          <span class="pindot"></span><span class="pindot"></span><span class="pindot"></span><span class="pindot"></span>
+        </div>
+        <div class="keypad" id="keypad">
+          <button>1</button><button>2</button><button>3</button>
+          <button>4</button><button>5</button><button>6</button>
+          <button>7</button><button>8</button><button>9</button>
+          <button class="k-act" data-act="clear">Effacer</button><button>0</button><button class="k-act" data-act="enter">Valider</button>
+        </div>
+        <p class="hint">Terminal partagé — votre session se ferme automatiquement après usage.</p>
+      </div>
+    </section>
+  </div>
+  <script src="assets/app.js"></script>
+</body>
+</html>

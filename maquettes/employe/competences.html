@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Mes Compétences &amp; Formation</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  /* Ajouts scoped à CET écran uniquement — assets/app.css n'est pas modifié. */
+
+  /* Surcharge locale de .gauge__fill (app.css: var(--corica-orange)) — le score global est une DONNÉE,
+     pas une action : anneau neutre foncé. assets/app.css n'est pas modifié. */
+  .gauge .gauge__fill { stroke: var(--ink); }
+
+  /* Badges d'écart / niveau atteint (référentiel) — un écart est une DONNÉE, pas une action : neutre. */
+  .gapbadge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-left: auto; }
+  .gapbadge--gap { background: var(--surface-2); color: var(--ink); }
+  .gapbadge--ok { background: var(--surface-2); color: var(--ink-soft); }
+
+  /* Badges de priorité (plan de développement) — différenciés par le remplissage, sans orange. */
+  .priobadge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+  .priobadge--critical { background: var(--ink); color: #fff; }
+  .priobadge--high { background: var(--surface); color: var(--ink); border: 1.5px solid var(--ink-soft); }
+  .priobadge--medium { background: var(--surface-2); color: var(--ink-soft); }
+
+  /* Badges de statut (plan de développement) — différenciés par le remplissage, sans orange. */
+  .statusbadge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+  .statusbadge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .statusbadge--done { background: var(--surface-2); color: var(--ink); }
+  .statusbadge--progress { background: var(--ink); color: #fff; }
+  .statusbadge--planned { background: var(--surface); color: var(--ink-soft); border: 1.5px solid var(--ink-soft); }
+
+  /* Badges de type de formation (catalogue) */
+  .typebadge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 6px; font-size: 12px; font-weight: 700; width: fit-content; }
+  .typebadge--interne { background: var(--surface-2); color: var(--ink-soft); }
+  .typebadge--externe { background: var(--surface-2); color: var(--ink-soft); }
+  .typebadge--elearning { background: var(--surface-2); color: var(--ink-soft); }
+  .typebadge--terrain { background: var(--surface-2); color: var(--ink-soft); }
+
+  /* Carte "action du plan de développement" */
+  .devcard { border: 1px solid var(--line); padding: 16px 18px; margin-bottom: 12px; }
+  .devcard:last-child { margin-bottom: 0; }
+  .devcard__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .devcard__title { font-size: 13.5px; font-weight: 700; flex: 1 1 240px; }
+  .devcard__gap { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 10px; }
+  /* Bande latérale interdite (border-left) remplacée par une bordure complète neutre 1px. */
+  .devcard__training { background: var(--surface-2); border: 1px solid var(--line); padding: 10px 14px; font-size: 12.5px; color: var(--ink-soft); }
+  .devcard__training b { color: var(--ink); font-weight: 600; display: block; margin-bottom: 2px; font-size: 13px; }
+
+  /* Grille du catalogue de formations disponibles */
+  .traincard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  .traincard { border: 1px solid var(--line); padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .traincard__title { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .traincard__meta { font-size: 12px; color: var(--ink-soft); }
+  /* Marqueur neutre (puce carrée) à la place de l'emoji 📌 — aucun rendu incertain sur kiosque. */
+  .traincard__pin { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); font-weight: 600; margin-top: 2px; }
+  .traincard__pin::before { content: ""; width: 6px; height: 6px; flex: none; background: var(--ink); }
+
+  .rail__logout {
+    margin-left: auto; width: 30px; height: 30px; flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rail-2); color: var(--rail-faint);
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+
+  /* Bloc avatar du rail-foot devenu lien vers le profil (§2). */
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+
+  /* Avatar de la topbar devenu lien vers le profil (§2). */
+  .avatar-link { display: inline-flex; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL — commun à tous les écrans du rôle Employé -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Espace Collaborateur</div>
+    <a class="navitem" href="dashboard.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM256 416c35.3 0 64-28.7 64-64c0-17.4-6.9-33.1-18.1-44.6L366 161.7c5.3-12.1-.2-26.3-12.3-31.6s-26.3 .2-31.6 12.3L257.9 288c-.6 0-1.3 0-1.9 0c-35.3 0-64 28.7-64 64s28.7 64 64 64zM176 144a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM96 288a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm352-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>
+      <span class="navlabel">Tableau de bord</span>
+    </a>
+    <a class="navitem" href="objectifs.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zm0 96a160 160 0 1 0 0 320 160 160 0 1 0 0-320zm0 96a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>
+      <span class="navlabel">Mes objectifs de performance</span>
+    </a>
+    <a class="navitem" href="evaluation.html">
+      <svg viewBox="0 0 384 512" fill="currentColor"><path d="M192 0c-41.8 0-77.4 26.7-90.5 64L64 64C28.7 64 0 92.7 0 128L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64l-37.5 0C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM305 273L177 401c-9.4 9.4-24.6 9.4-33.9 0L79 337c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L271 239c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>
+      <span class="navlabel">Mon auto-évaluation</span>
+    </a>
+    <a class="navitem is-active" href="competences.html">
+      <svg viewBox="0 0 576 512" fill="currentColor"><path d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"/></svg>
+      <span class="navlabel">Mes Compétences &amp; Formation</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="profil.html" title="Voir mon profil">
+        <div class="avatar">AD</div>
+        <div class="who"><b>Anzoumana Diakité</b><small>EMPLOYE</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Mes Compétences &amp; Formation</h1>
+        <p>Anzoumana Diakité · Matricule 10057 · PRODUCTION · Sissengué · Campagne 2026</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <button class="iconbtn js-notif"><span class="dot"></span>
+        <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224 0c-17.7 0-32 14.3-32 32l0 19.2C119 66 64 130.6 64 208l0 18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416l384 0c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8l0-18.8c0-77.4-55-142-128-156.8L256 32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3l-64 0-64 0c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"/></svg>
+      </button>
+      <a class="avatar-link" href="profil.html" title="Mon profil"><div class="avatar avatar--sm">AD</div></a>
+    </header>
+
+    <div class="content">
+
+      <!-- En-tête interne : identité + score global -->
+      <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--line)">
+        <div class="row" style="gap:14px">
+          <div class="avatar" style="width:52px;height:52px;font-size:17px">AD</div>
+          <div>
+            <div style="font-size:16.5px;font-weight:700;color:var(--ink)">Anzoumana Diakité</div>
+            <div class="muted" style="font-size:13px;margin-top:2px">EMPLOYE · Sissengué</div>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <div class="gauge">
+            <svg viewBox="0 0 96 96">
+              <circle class="gauge__track" cx="48" cy="48" r="40"></circle>
+              <circle class="gauge__fill" cx="48" cy="48" r="40" stroke-dasharray="251.2" stroke-dashoffset="80.4"></circle>
+            </svg>
+            <span class="gauge__value num">68%</span>
+          </div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:8px">Score Global</div>
+        </div>
+      </div>
+
+      <!-- Onglets -->
+      <div class="toolbar">
+        <button class="chipfilter is-on" data-tab="competences">Mes Compétences</button>
+        <button class="chipfilter" data-tab="formations">Formations &amp; Plan de Développement</button>
+      </div>
+
+      <!-- ============================================================
+           ONGLET 1 — MES COMPÉTENCES
+      ============================================================= -->
+      <div data-tabpanel="competences">
+
+        <div class="statstrip">
+          <div class="stat"><span class="stat__n num">8</span><span class="stat__l">Compétences évaluées</span></div>
+          <div class="stat"><span class="stat__n num">3</span><span class="stat__l">Niveau requis atteint</span></div>
+          <div class="stat"><span class="stat__n num">5</span><span class="stat__l">À développer</span></div>
+        </div>
+
+        <section class="panel">
+          <div class="panel__head">
+            <h2>Auto-évaluation de mes compétences · PRODUCTION</h2>
+            <span class="sub">Cliquez sur un niveau (1 à 4) pour vous positionner</span>
+          </div>
+          <div class="panel__body">
+
+            <div class="nb-legend" style="margin-top:0;padding-top:0;border-top:none;margin-bottom:18px">
+              <span><i style="background:oklch(0.975 0.004 60)"></i>1 · Initial / Apprenti</span>
+              <span><i style="background:oklch(0.938 0.006 52)"></i>2 · Opérationnel</span>
+              <span><i style="background:oklch(0.892 0.008 46)"></i>3 · Avancé / Maîtrise</span>
+              <span><i style="background:oklch(0.842 0.011 42)"></i>4 · Expert / Formateur</span>
+            </div>
+
+            <div class="objcards">
+
+              <!-- C001 -->
+              <section class="panel objcard">
+                <div class="objcard__head">
+                  <span class="objcard__num">C001</span>
+                  <p class="objcard__title">Conduite d'engins miniers lourds (Dumper, ADT)</p>
+                  <span class="gapbadge gapbadge--ok">✓ Niveau atteint</span>
+                </div>
+                <p class="objcard__meta">Domaine&nbsp;: Conduite d'engins · Niveau requis&nbsp;: 3/4</p>
+                <div class="objcard__row">
+                  <div class="objcard__block objcard__block--eval">
+                    <span class="objcard__label">Votre niveau</span>
+                    <div class="rating" data-rating>
+                      <button>1</button><button>2</button><button class="is-on">3</button><button>4</button>
+                    </div>
+                    <span class="eval-label">Avancé / Maîtrise</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- C002 -->
+              <section class="panel objcard">
+                <div class="objcard__head">
+                  <span class="objcard__num">C002</span>
+                  <p class="objcard__title">Opération de pelle hydraulique et chargeuses</p>
+                  <span class="gapbadge gapbadge--gap">Gap −1</span>
+                </div>
+                <p class="objcard__meta">Domaine&nbsp;: Conduite d'engins · Niveau requis&nbsp;: 3/4</p>
+                <div class="objcard__row">
+                  <div class="objcard__block objcard__block--eval">
+                    <span class="objcard__label">Votre niveau</span>
+                    <div class="rating" data-rating>
+                      <button>1</button><button class="is-on">2</button><button>3</button><button>4</button>
+                    </div>
+                    <span class="eval-label">Opérationnel</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- C003 -->
+              <section class="panel objcard">
+                <div class="objcard__head">
+                  <span class="objcard__num">C003</span>
+                  <p class="objcard__title">Maintenance de premier niveau et diagnostic de pannes</p>
+                  <span class="gapbadge gapbadge--gap">Gap −2</span>
+                </div>
+                <p class="objcard__meta">Domaine&nbsp;: Maintenance · Niveau requis&nbsp;: 3/4</p>
+                <div class="objcard__row">
+                  <div class="objcard__block objcard__block--eval">
+                    <span class="objcard__label">Votre niveau</span>
+                    <div class="rating" data-rating>
+                      <button class="is-on">1</button><button>2</button><button>3</button><button>4</button>
+                    </div>
+                    <span class="eval-label">Initial / Apprenti</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- C004 -->
+              <section class="panel objcard">
+                <div class="objcard__head">
+                  <span class="objcard__num">C004</span>
+                  <p class="objcard__title">Lecture de plan de mine et topographie de base</p>
+                  <span class="gapbadge gapbadge--ok">✓ Niveau atteint</span>
+                </div>
+                <p class="objcard__meta">Domaine&nbsp;: Technique · Niveau requis&nbsp;: 2/4</p>
+                <div class="objcard__row">
+                  <div class="objcard__block objcard__block--eval">
+                    <span class="objcard__label">Votre niveau</span>
+                    <div class="rating" data-rating>
+                      <button>1</button><button>2</button><button class="is-on">3</button><button>4</button>
+                    </div>
+                    <span class="eval-label">Avancé / Maîtrise</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- C005 -->
+              <section class="panel objcard">
+                <div class="objcard__head">
+                  <span class="objcard__num">C005</span>
+                  <p class="objcard__title">Gestion des risques et analyse HIRA/JSA</p>
+                  <span class="gapbadge gapbadge--gap">Gap −1</span>
+                </div>
+                <p class="objcard__meta">Domaine&nbsp;: HSE · Niveau requis&nbsp;: 3/4</p>
+                <div class="objcard__row">
+                  <div class="objcard__block objcard__block--eval">
+                    <span class="objcard__label">Votre niveau</span>
+                    <div class="rating" data-rating>
+                      <button>1</button><button class="is-on">2</button><button>3</button><button>4</button>
+                    </div>
+                    <span class="eval-label">Opérationnel</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- C006 -->
+              <section class="panel objcard">
+                <div class="objcard__head">
+                  <span class="objcard__num">C006</span>
+                  <p class="objcard__title">Supervision et management d'équipe de production</p>
+                  <span class="gapbadge gapbadge--gap">Gap −3</span>
+                </div>
+                <p class="objcard__meta">Domaine&nbsp;: Management · Niveau requis&nbsp;: 4/4</p>
+                <div class="objcard__row">
+                  <div class="objcard__block objcard__block--eval">
+                    <span class="objcard__label">Votre niveau</span>
+                    <div class="rating" data-rating>
+                      <button class="is-on">1</button><button>2</button><button>3</button><button>4</button>
+                    </div>
+                    <span class="eval-label">Initial / Apprenti</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- C007 -->
+              <section class="panel objcard">
+                <div class="objcard__head">
+                  <span class="objcard__num">C007</span>
+                  <p class="objcard__title">Application des procédures de sécurité et permis de travail</p>
+                  <span class="gapbadge gapbadge--ok">✓ Niveau atteint</span>
+                </div>
+                <p class="objcard__meta">Domaine&nbsp;: HSE · Niveau requis&nbsp;: 3/4</p>
+                <div class="objcard__row">
+                  <div class="objcard__block objcard__block--eval">
+                    <span class="objcard__label">Votre niveau</span>
+                    <div class="rating" data-rating>
+                      <button>1</button><button>2</button><button>3</button><button class="is-on">4</button>
+                    </div>
+                    <span class="eval-label">Expert / Formateur</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- C008 -->
+              <section class="panel objcard">
+                <div class="objcard__head">
+                  <span class="objcard__num">C008</span>
+                  <p class="objcard__title">Autonomie et prise de décision opérationnelle</p>
+                  <span class="gapbadge gapbadge--gap">Gap −1</span>
+                </div>
+                <p class="objcard__meta">Domaine&nbsp;: Comportemental · Niveau requis&nbsp;: 2/4</p>
+                <div class="objcard__row">
+                  <div class="objcard__block objcard__block--eval">
+                    <span class="objcard__label">Votre niveau</span>
+                    <div class="rating" data-rating>
+                      <button class="is-on">1</button><button>2</button><button>3</button><button>4</button>
+                    </div>
+                    <span class="eval-label">Initial / Apprenti</span>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============================================================
+           ONGLET 2 — FORMATIONS & PLAN DE DÉVELOPPEMENT
+      ============================================================= -->
+      <div data-tabpanel="formations" style="display:none">
+
+        <section class="panel" style="margin-bottom:22px">
+          <div class="panel__head">
+            <h2>Mon Plan de Développement</h2>
+            <span class="sub">Une action de formation par compétence en écart</span>
+          </div>
+          <div class="panel__body">
+
+            <div class="devcard">
+              <div class="devcard__head">
+                <span class="devcard__title">Opération de pelle hydraulique et chargeuses</span>
+                <span class="priobadge priobadge--medium">Modéré</span>
+                <span class="statusbadge statusbadge--done">Terminée</span>
+              </div>
+              <div class="devcard__gap">Gap actuel : 1 point sous le niveau requis</div>
+              <div class="devcard__training">
+                <b>Opération Pelle Hydraulique P&amp;H 4100</b>
+                7 jours · Komatsu Mining · Externe · 1200 K FCFA
+              </div>
+            </div>
+
+            <div class="devcard">
+              <div class="devcard__head">
+                <span class="devcard__title">Maintenance de premier niveau et diagnostic de pannes</span>
+                <span class="priobadge priobadge--high">Élevé</span>
+                <span class="statusbadge statusbadge--planned">Planifiée</span>
+              </div>
+              <div class="devcard__gap">Gap actuel : 2 points sous le niveau requis</div>
+              <div class="devcard__training">
+                <b>Maintenance Premier Niveau Engins Lourds</b>
+                4 jours · Caterpillar Training · Externe · 680 K FCFA
+              </div>
+            </div>
+
+            <div class="devcard">
+              <div class="devcard__head">
+                <span class="devcard__title">Gestion des risques et analyse HIRA/JSA</span>
+                <span class="priobadge priobadge--medium">Modéré</span>
+                <span class="statusbadge statusbadge--planned">Planifiée</span>
+              </div>
+              <div class="devcard__gap">Gap actuel : 1 point sous le niveau requis</div>
+              <div class="devcard__training">
+                <b>Analyse des Risques HIRA/JSA (Module en ligne)</b>
+                1 jour · CORICA Learning · E-learning · 90 K FCFA
+              </div>
+            </div>
+
+            <div class="devcard">
+              <div class="devcard__head">
+                <span class="devcard__title">Supervision et management d'équipe de production</span>
+                <span class="priobadge priobadge--critical">Prioritaire</span>
+                <span class="statusbadge statusbadge--progress">En cours</span>
+              </div>
+              <div class="devcard__gap">Gap actuel : 3 points sous le niveau requis</div>
+              <div class="devcard__training">
+                <b>Leadership &amp; Management d'Équipe Production</b>
+                3 jours · CORICA Interne · Interne · 420 K FCFA
+              </div>
+            </div>
+
+            <div class="devcard">
+              <div class="devcard__head">
+                <span class="devcard__title">Autonomie et prise de décision opérationnelle</span>
+                <span class="priobadge priobadge--medium">Modéré</span>
+                <span class="statusbadge statusbadge--progress">En cours</span>
+              </div>
+              <div class="devcard__gap">Gap actuel : 1 point sous le niveau requis</div>
+              <div class="devcard__training">
+                <b>Tutorat Terrain · Autonomie &amp; Prise de Décision</b>
+                5 jours · Encadrement Chef d'équipe · Sur le tas · 130 K FCFA
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h2>Formations disponibles : PRODUCTION</h2></div>
+          <div class="panel__body">
+            <div class="traincard-grid">
+
+              <div class="traincard">
+                <span class="traincard__title">Opération Pelle Hydraulique P&amp;H 4100</span>
+                <span class="traincard__meta">7 jours · Komatsu Mining</span>
+                <span class="typebadge typebadge--externe">Externe</span>
+                <b class="num" style="font-size:14px">1200 K FCFA</b>
+                <span class="traincard__pin">Dans votre plan de développement</span>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Maintenance Premier Niveau Engins Lourds</span>
+                <span class="traincard__meta">4 jours · Caterpillar Training</span>
+                <span class="typebadge typebadge--externe">Externe</span>
+                <b class="num" style="font-size:14px">680 K FCFA</b>
+                <span class="traincard__pin">Dans votre plan de développement</span>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Leadership &amp; Management d'Équipe Production</span>
+                <span class="traincard__meta">3 jours · CORICA Interne</span>
+                <span class="typebadge typebadge--interne">Interne</span>
+                <b class="num" style="font-size:14px">420 K FCFA</b>
+                <span class="traincard__pin">Dans votre plan de développement</span>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Analyse des Risques HIRA/JSA (Module en ligne)</span>
+                <span class="traincard__meta">1 jour · CORICA Learning</span>
+                <span class="typebadge typebadge--elearning">E-learning</span>
+                <b class="num" style="font-size:14px">90 K FCFA</b>
+                <span class="traincard__pin">Dans votre plan de développement</span>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Habilitation Électrique Basse Tension</span>
+                <span class="traincard__meta">3 jours · Bureau Veritas</span>
+                <span class="typebadge typebadge--externe">Externe</span>
+                <b class="num" style="font-size:14px">340 K FCFA</b>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+<script>
+  /* Bascule des onglets de cet écran (visuel .is-on déjà géré par app.js via .chipfilter). */
+  (function () {
+    "use strict";
+    var chips = document.querySelectorAll("[data-tab]");
+    var panels = document.querySelectorAll("[data-tabpanel]");
+    chips.forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        var key = chip.getAttribute("data-tab");
+        panels.forEach(function (p) {
+          p.style.display = (p.getAttribute("data-tabpanel") === key) ? "" : "none";
+        });
+      });
+    });
+  })();
+</script>
+</body>
+</html>
