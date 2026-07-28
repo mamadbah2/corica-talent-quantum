@@ -70,6 +70,13 @@
   .or { display: flex; align-items: center; gap: 14px; color: var(--ink-faint); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; margin: 22px 0; }
   .or::before, .or::after { content: ""; height: 1px; background: var(--line); flex: 1; }
   .hint { font-size: 12px; color: var(--ink-faint); text-align: center; margin-top: 22px; line-height: 1.6; }
+  .form-quote { margin: 44px 0 0; text-align: center; }
+  .form-quote::before { content: "\201C"; display: block; font-family: var(--font-display);
+    font-size: 54px; line-height: 0.5; color: var(--ink-faint); opacity: 0.4; margin-bottom: 12px; }
+  .form-quote blockquote { margin: 0; font-size: 18px; font-weight: 600; font-style: italic;
+    color: var(--ink-soft); line-height: 1.5; letter-spacing: -0.005em; }
+  .form-quote figcaption { margin-top: 14px; font-style: normal; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-faint); }
 
   /* Kiosk */
   .kiosk { display: none; }
@@ -94,7 +101,7 @@
       <img class="logo" src="../brand-assets/corica-logo-white.svg" alt="CORICA Mining Services">
       <div class="spacer"></div>
       <h1 class="display headline"><span>Talent</span><span class="accent">Quantum</span></h1>
-      <p class="lead">Gestion des talents et de la performance — CORICA Mining Services.</p>
+      <p class="lead">Gestion des talents et de la performance CORICA Mining Services.</p>
       <div class="band corica-band"></div>
       <p class="tagline">Local knowledge, <b>global standards</b></p>
     </aside>
@@ -113,6 +120,10 @@
         <div class="field"><label>Adresse e-mail CORICA</label><input class="input" type="email" placeholder="prenom.nom@corica.com"></div>
         <div class="field"><label>Mot de passe</label><input class="input" type="password" placeholder="••••••••"></div>
         <button class="btn btn--primary btn--block">Continuer</button>
+        <figure class="form-quote">
+          <blockquote>«&nbsp;Cultivons l'Excellence,<br>Validons notre Potentiel&nbsp;»</blockquote>
+          <figcaption>— Le Directeur des Ressources Humaines</figcaption>
+        </figure>
       </div>
 
       <!-- Kiosk -->
