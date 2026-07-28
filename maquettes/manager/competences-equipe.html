@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Skills Matrix — Mon Équipe</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  /* Mécanique de coque reprise telle quelle du gabarit manager/equipe.html —
+     ces classes ne sont pas définies dans assets/app.css, donc dupliquées localement ici. */
+  .rail__logout {
+    margin-left: auto; width: 30px; height: 30px; flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rail-2); color: var(--rail-faint);
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+
+  .avatar-link { display: inline-flex; }
+
+  /* ---- Marqueur "sous le niveau requis" sur les cellules de la matrice ----
+     app.css fournit .matrix/.lvl-0..4 (échelle neutre de niveau), mais aucun indicateur de gap.
+     Design-lock : pas de nouvelle teinte — un point encre discret en coin de cellule suffit à
+     signaler l'écart sans sortir de l'échelle séquentielle neutre. */
+  .matrix td.is-gap { font-weight: 800; position: relative; }
+  .matrix td.is-gap::after {
+    content: ""; position: absolute; top: 5px; right: 5px;
+    width: 5px; height: 5px; background: var(--ink); opacity: 0.5;
+  }
+
+  /* ---- Onglet Évaluer un Collaborateur : liste + panneau détail ----
+     Pattern absent d'app.css (qui n'offre pas de composant liste-sélection / détail combiné) →
+     étendu localement. La sélection est un état, pas une action : remplissage neutre (--surface-2)
+     + liseré encre, jamais orange (cf. .chipfilter.is-on déjà en encre dans app.css). */
+  .evalsplit { display: flex; align-items: flex-start; gap: 20px; }
+  .evallist { width: 280px; flex: none; }
+  .evallist .panel__body { padding: 0; }
+  .evallist__search { padding: 14px; border-bottom: 1px solid var(--line-soft); }
+  .evallist__count { font-size: 10.5px; color: var(--ink-faint); font-weight: 700; margin-top: 8px; }
+  .evalitem { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line-soft); }
+  .evalitem:last-child { border-bottom: none; }
+  .evalitem.is-selected { background: var(--surface-2); border-left: 3px solid var(--ink); padding-left: 11px; }
+  .evalitem__body { flex: 1; min-width: 0; }
+  .evalitem__name { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .evalitem__meta { font-size: 10.5px; color: var(--ink-soft); margin-top: 1px; }
+  .evalitem__score { flex: none; font-size: 12px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .evalitem__flag { flex: none; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink); background: var(--surface-2); border: 1px solid var(--ink-soft); padding: 2px 6px; }
+
+  .evaldetail__head { padding: 18px 20px; border-bottom: 1px solid var(--line-soft); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: var(--surface-2); }
+  .evaldetail__ident { display: flex; align-items: center; gap: 14px; }
+  .evaldetail__tags { display: flex; gap: 6px; margin-top: 7px; flex-wrap: wrap; }
+  .microtag { font-size: 10px; font-weight: 700; padding: 2px 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft); }
+  .microtag--ink { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .ministats { display: flex; gap: 10px; }
+  .ministat { background: var(--surface); border: 1px solid var(--line); padding: 9px 16px; text-align: center; min-width: 76px; }
+  .ministat b { display: block; font-size: 21px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ministat span { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); }
+
+  .evaldetail__foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  /* ---- Groupes de domaine repliables ----
+     app.css ne fournit pas de composant accordéon/disclosure. <details>/<summary> natif (zéro JS,
+     accessible) reprend le gabarit visuel .panel (fond/bordure/carré) déjà en place ailleurs. */
+  details.domaingroup { border: 1px solid var(--line); background: var(--surface); }
+  details.domaingroup + details.domaingroup { margin-top: 10px; }
+  details.domaingroup summary {
+    list-style: none; cursor: pointer; padding: 13px 16px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--surface-2);
+  }
+  details.domaingroup summary::-webkit-details-marker { display: none; }
+  details.domaingroup summary .dg-name { font-weight: 700; font-size: 13px; color: var(--ink); }
+  details.domaingroup summary .dg-count { font-size: 11.5px; color: var(--ink-faint); }
+  details.domaingroup summary .dg-bar { width: 90px; height: 6px; background: var(--line-soft); overflow: hidden; }
+  details.domaingroup summary .dg-bar i { display: block; height: 100%; background: var(--ink-soft); }
+  details.domaingroup summary .dg-pct { font-size: 12.5px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+  details.domaingroup summary .dg-chevron {
+    margin-left: auto; width: 9px; height: 9px;
+    border-right: 2px solid var(--ink-soft); border-bottom: 2px solid var(--ink-soft);
+    transform: rotate(45deg); transition: transform 150ms ease;
+  }
+  details.domaingroup[open] summary .dg-chevron { transform: rotate(-135deg); }
+  details.domaingroup .domaingroup__body { padding: 14px 16px; border-top: 1px solid var(--line-soft); }
+  details.domaingroup .objcards { gap: 12px; }
+  details.domaingroup .objcard { padding: 14px 16px; }
+
+  /* Badges d'écart — repris tels quels de employe/competences.html (pattern local, pas dans app.css).
+     Un écart est une DONNÉE, pas une action : neutre. */
+  .gapbadge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+  .gapbadge--gap { background: var(--surface-2); color: var(--ink); }
+  .gapbadge--ok { background: var(--surface-2); color: var(--ink-soft); }
+
+  /* ---- Onglet Gaps & Priorités ----
+     Carte de gap : barre de moyenne + marqueur du niveau requis. .bar (app.css) ne prévoit pas ce
+     marqueur → étendu localement en surcouche neutre. */
+  .gapcard { padding: 18px 20px; }
+  .gapcard__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .gapcard__title { font-size: 14px; font-weight: 700; color: var(--ink); margin: 6px 0 0; }
+  .reqbar { position: relative; flex: 1; }
+  .reqbar .bar { height: 10px; }
+  .reqbar .bar > i { background: var(--ink); }
+  .reqbar__marker { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink-soft); }
+  .gapcard__meter { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+  .gapcard__meter-val { flex: none; font-size: 12.5px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+  .gapcard__names { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .namechip { font-size: 10.5px; font-weight: 700; padding: 3px 9px; background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--line); }
+  .gapcard__training {
+    margin-top: 14px; background: var(--surface-2); border: 1px solid var(--line);
+    padding: 11px 15px; font-size: 12.5px; color: var(--ink-soft); display: flex; gap: 10px; align-items: flex-start;
+  }
+  .gapcard__training b { color: var(--ink); font-weight: 700; display: block; margin-bottom: 2px; font-size: 13px; }
+  .gapcard__training svg { width: 15px; height: 15px; color: var(--ink-faint); margin-top: 2px; flex: none; }
+
+  /* ---- Catalogue de formations (grille de cartes) ----
+     Repris tel quel de employe/competences.html (pattern local, non promu dans app.css). */
+  .traincard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  .traincard { border: 1px solid var(--line); padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .traincard__title { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .traincard__meta { font-size: 12px; color: var(--ink-soft); }
+  .traincard__tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+  .typebadge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 6px; font-size: 12px; font-weight: 700; width: fit-content; }
+  .typebadge--interne { background: var(--surface-2); color: var(--ink-soft); }
+  .typebadge--externe { background: var(--surface-2); color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Espace Manager</div>
+    <a class="navitem" href="equipe.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
+      <span class="navlabel">Mon Équipe Directe</span>
+    </a>
+    <a class="navitem" href="../partages/9box.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="16" y="16" width="144" height="144"/><rect x="184" y="16" width="144" height="144"/><rect x="352" y="16" width="144" height="144"/><rect x="16" y="184" width="144" height="144"/><rect x="184" y="184" width="144" height="144"/><rect x="352" y="184" width="144" height="144"/><rect x="16" y="352" width="144" height="144"/><rect x="184" y="352" width="144" height="144"/><rect x="352" y="352" width="144" height="144"/></svg>
+      <span class="navlabel">Matrice 9-Box</span>
+    </a>
+    <a class="navitem" href="rapports.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="32" y="256" width="96" height="224"/><rect x="208" y="160" width="96" height="320"/><rect x="384" y="64" width="96" height="416"/></svg>
+      <span class="navlabel">Rapports</span>
+    </a>
+    <a class="navitem is-active" href="competences-equipe.html">
+      <svg viewBox="0 0 576 512" fill="currentColor"><path d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"/></svg>
+      <span class="navlabel">Compétences</span>
+    </a>
+    <a class="navitem" href="inbox.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M96 64C60.7 64 32 92.7 32 128l0 256c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64L96 64zM64 128c0-17.7 14.3-32 32-32l320 0c17.7 0 32 14.3 32 32l0 96-96 0c-8.8 0-16 5.9-18.3 14.4C325 264.6 302 288 256 288s-69-23.4-77.7-49.6C176 229.9 168.8 224 160 224l-96 0 0-96zm0 128 82.7 0c14.3 33.5 51.3 64 109.3 64s95-30.5 109.3-64L448 256l0 128c0 17.7-14.3 32-32 32L96 416c-17.7 0-32-14.3-32-32l0-128z"/></svg>
+      <span class="navlabel">Inbox &amp; Approbations</span>
+    </a>
+    <a class="navitem" href="arbitrage-n2.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M384 32l128 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L398.4 96c-5.2 25.8-22.9 47.1-46.4 57.3L352 448l160 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-192 0-192 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l160 0 0-294.7c-23.5-10.3-41.2-31.6-46.4-57.3L128 96c-17.7 0-32-14.3-32-32s14.3-32 32-32l128 0c14.6-19.4 37.8-32 64-32s49.4 12.6 64 32zm55.6 288l144.9 0L512 214.3 439.6 320zM512 384c-62.9 0-115.2-34-126.9-79.1c-3.5-13.5 4.2-27.2 15.9-34.7l108.4-158.4c9.8-14.3 30.6-14.3 40.4 0L659.6 270.2c11.6 7.5 19.4 21.2 15.9 34.7C627.2 350 574.9 384 512 384zM126.9 320c-62.9 0-115.2-34-126.9-79.1c-3.5-13.5 4.2-27.2 15.9-34.7L124.3 47.9c9.8-14.3 30.6-14.3 40.4 0L273.1 206.2c11.6 7.5 19.4 21.2 15.9 34.7C277.2 286 224.9 320 162 320l-35.1 0z"/></svg>
+      <span class="navlabel">Arbitrage N+2</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="profil.html" title="Voir mon profil">
+        <div class="avatar">MT</div>
+        <div class="who"><b>Mamadou Traoré</b><small>MANAGER</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Skills Matrix — Mon Équipe</h1>
+        <p>Visualisez et analysez les compétences et formations de vos 9 collaborateurs</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <span class="pill pill--closed">Accès Confidentiel</span>
+      <button class="iconbtn js-notif"><span class="dot"></span>
+        <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224 0c-17.7 0-32 14.3-32 32l0 19.2C119 66 64 130.6 64 208l0 18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416l384 0c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8l0-18.8c0-77.4-55-142-128-156.8L256 32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3l-64 0-64 0c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"/></svg>
+      </button>
+      <a class="avatar-link" href="profil.html" title="Mon profil"><div class="avatar avatar--sm">MT</div></a>
+    </header>
+
+    <div class="content">
+
+      <p class="muted" style="font-size:12.5px;margin:0 0 14px">9 collaborateurs · Dépt. principal : <strong style="color:var(--ink)">PRODUCTION</strong> · Sissengué</p>
+
+      <!-- Bandeau KPI -->
+      <div class="statstrip">
+        <div class="stat"><span class="stat__n num">6</span><span class="stat__l">Gaps critiques</span></div>
+        <div class="stat"><span class="stat__n num">61<span class="stat__u">%</span></span><span class="stat__l">Score moyen équipe</span></div>
+      </div>
+
+      <!-- Onglets -->
+      <div class="toolbar">
+        <button class="chipfilter is-on" data-tab="matrix">Matrice Compétences</button>
+        <button class="chipfilter" data-tab="evaluation">Évaluer un Collaborateur</button>
+        <button class="chipfilter" data-tab="gaps">Gaps &amp; Priorités (6)</button>
+        <button class="chipfilter" data-tab="catalogue">Formations disponibles</button>
+      </div>
+
+      <!-- ============================================================
+           ONGLET 1 — MATRICE COMPÉTENCES
+      ============================================================= -->
+      <div data-tabpanel="matrix">
+        <section class="panel" style="overflow:hidden">
+          <div class="matrix-wrap">
+            <table class="matrix">
+              <thead>
+                <tr>
+                  <th class="corner">Collaborateur</th>
+                  <th>C001<br><span style="font-weight:500;color:var(--ink-faint)">Conduite d'engins lourds</span><br>Req&nbsp;: 3/4</th>
+                  <th>C002<br><span style="font-weight:500;color:var(--ink-faint)">Pelle hydraulique</span><br>Req&nbsp;: 3/4</th>
+                  <th>C005<br><span style="font-weight:500;color:var(--ink-faint)">Production journalière</span><br>Req&nbsp;: 2/4</th>
+                  <th>C006<br><span style="font-weight:500;color:var(--ink-faint)">Supervision d'équipe</span><br>Req&nbsp;: 3/4</th>
+                  <th>C016<br><span style="font-weight:500;color:var(--ink-faint)">Risques HIRA/JSA</span><br>Req&nbsp;: 3/4</th>
+                  <th>C036<br><span style="font-weight:500;color:var(--ink-faint)">Leadership</span><br>Req&nbsp;: 3/4</th>
+                  <th>C037<br><span style="font-weight:500;color:var(--ink-faint)">Communication</span><br>Req&nbsp;: 2/4</th>
+                  <th>C048<br><span style="font-weight:500;color:var(--ink-faint)">Orienté résultat</span><br>Req&nbsp;: 3/4</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 10057 Anzoumana Diakite -->
+                <tr>
+                  <th><div class="cell-person"><span class="avatar avatar--sm">AD</span><span><b>Anzoumana Diakite</b><small style="color:var(--ink-faint)">Opérateur Dump Truck</small></span></div></th>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-2">2/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="num" style="font-weight:800">53%</td>
+                </tr>
+                <!-- 10058 Issiaka Konate -->
+                <tr>
+                  <th><div class="cell-person"><span class="avatar avatar--sm">IK</span><span><b>Issiaka Konate</b><small style="color:var(--ink-faint)">Opérateur ADT</small></span></div></th>
+                  <td class="lvl-4">4/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="num" style="font-weight:800">66%</td>
+                </tr>
+                <!-- 10059 Siaka Djakite -->
+                <tr>
+                  <th><div class="cell-person"><span class="avatar avatar--sm">SD</span><span><b>Siaka Djakite</b><small style="color:var(--ink-faint)">Foreur</small></span></div></th>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-4">4/4</td>
+                  <td class="lvl-2">2/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-2">2/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="num" style="font-weight:800">50%</td>
+                </tr>
+                <!-- 10060 Fiacre Tossou -->
+                <tr>
+                  <th><div class="cell-person"><span class="avatar avatar--sm">FT</span><span><b>Fiacre Tossou</b><small style="color:var(--ink-faint)">Chef d'Équipe Production</small></span></div></th>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-4">4/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-4">4/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="num" style="font-weight:800">75%</td>
+                </tr>
+                <!-- 10061 Arouna Sankara -->
+                <tr>
+                  <th><div class="cell-person"><span class="avatar avatar--sm">AS</span><span><b>Arouna Sankara</b><small style="color:var(--ink-faint)">Superviseur Production</small></span></div></th>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-4">4/4</td>
+                  <td class="lvl-4">4/4</td>
+                  <td class="lvl-4">4/4</td>
+                  <td class="lvl-4">4/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-4">4/4</td>
+                  <td class="num" style="font-weight:800">91%</td>
+                </tr>
+                <!-- 10062 Kamoko Kone -->
+                <tr>
+                  <th><div class="cell-person"><span class="avatar avatar--sm">KK</span><span><b>Kamoko Kone</b><small style="color:var(--ink-faint)">Opérateur Grader</small></span></div></th>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-2">2/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-2">2/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="num" style="font-weight:800">38%</td>
+                </tr>
+                <!-- 10063 Issouf Kone -->
+                <tr>
+                  <th><div class="cell-person"><span class="avatar avatar--sm">IK</span><span><b>Issouf Kone</b><small style="color:var(--ink-faint)">Opérateur Bulldozer</small></span></div></th>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-2">2/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-2">2/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="num" style="font-weight:800">56%</td>
+                </tr>
+                <!-- 10064 Zie Kone -->
+                <tr>
+                  <th><div class="cell-person"><span class="avatar avatar--sm">ZK</span><span><b>Zie Kone</b><small style="color:var(--ink-faint)">Offsider Drilling</small></span></div></th>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-1 is-gap">1/4</td>
+                  <td class="lvl-2 is-gap">2/4</td>
+                  <td class="num" style="font-weight:800">41%</td>
+                </tr>
+                <!-- 10065 Dognimin Coulibaly -->
+                <tr>
+                  <th><div class="cell-person"><span class="avatar avatar--sm">DC</span><span><b>Dognimin Coulibaly</b><small style="color:var(--ink-faint)">Leading Hand Production</small></span></div></th>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="lvl-3">3/4</td>
+                  <td class="num" style="font-weight:800">75%</td>
+                </tr>
+                <!-- Moyenne équipe -->
+                <tr style="background:var(--surface-2)">
+                  <th style="background:var(--surface-2)">Moyenne équipe</th>
+                  <td class="lvl-3" style="font-weight:800">2,7</td>
+                  <td class="lvl-3" style="font-weight:800">2,6</td>
+                  <td class="lvl-2" style="font-weight:800">2,4</td>
+                  <td class="lvl-2 is-gap" style="font-weight:800">2,1</td>
+                  <td class="lvl-2" style="font-weight:800">2,4</td>
+                  <td class="lvl-2 is-gap" style="font-weight:800">2,1</td>
+                  <td class="lvl-2" style="font-weight:800">2,3</td>
+                  <td class="lvl-3" style="font-weight:800">2,7</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="nb-legend" style="margin:0;padding:14px 20px;border-top:1px solid var(--line-soft)">
+            <span><i style="background:oklch(0.975 0.004 60)"></i>1 · Initial / Apprenti</span>
+            <span><i style="background:oklch(0.938 0.006 52)"></i>2 · Opérationnel</span>
+            <span><i style="background:oklch(0.892 0.008 46)"></i>3 · Avancé / Maîtrise</span>
+            <span><i style="background:oklch(0.842 0.011 42)"></i>4 · Expert / Formateur</span>
+            <span><i style="background:var(--ink);opacity:.5;border-radius:50%;width:6px;height:6px;border:none"></i>Sous le niveau requis de la compétence</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============================================================
+           ONGLET 2 — ÉVALUER UN COLLABORATEUR
+      ============================================================= -->
+      <div data-tabpanel="evaluation" style="display:none">
+        <div class="evalsplit">
+
+          <!-- Liste des collaborateurs -->
+          <section class="panel evallist">
+            <div class="evallist__search">
+              <input class="input" placeholder="Rechercher un collaborateur…">
+              <p class="evallist__count">9 collaborateurs</p>
+            </div>
+            <div class="panel__body">
+              <div class="evalitem is-selected">
+                <span class="avatar avatar--sm">AD</span>
+                <div class="evalitem__body"><div class="evalitem__name">Anzoumana Diakite</div><div class="evalitem__meta">Opérateur Dump Truck · Sissengué</div></div>
+                <span class="evalitem__score">53%</span>
+              </div>
+              <div class="evalitem">
+                <span class="avatar avatar--sm">IK</span>
+                <div class="evalitem__body"><div class="evalitem__name">Issiaka Konate</div><div class="evalitem__meta">Opérateur ADT · Sissengué</div></div>
+                <span class="evalitem__score">66%</span>
+              </div>
+              <div class="evalitem">
+                <span class="avatar avatar--sm">SD</span>
+                <div class="evalitem__body"><div class="evalitem__name">Siaka Djakite</div><div class="evalitem__meta">Foreur · Sissengué</div></div>
+                <span class="evalitem__score">50%</span>
+              </div>
+              <div class="evalitem">
+                <span class="avatar avatar--sm">FT</span>
+                <div class="evalitem__body"><div class="evalitem__name">Fiacre Tossou</div><div class="evalitem__meta">Chef d'Équipe Production · Sissengué</div></div>
+                <span class="evalitem__score">75%</span>
+              </div>
+              <div class="evalitem">
+                <span class="avatar avatar--sm">AS</span>
+                <div class="evalitem__body"><div class="evalitem__name">Arouna Sankara</div><div class="evalitem__meta">Superviseur Production · Sissengué</div></div>
+                <span class="evalitem__score">91%</span>
+              </div>
+              <div class="evalitem">
+                <span class="avatar avatar--sm">KK</span>
+                <div class="evalitem__body"><div class="evalitem__name">Kamoko Kone</div><div class="evalitem__meta">Opérateur Grader · Sissengué</div></div>
+                <span class="evalitem__score">38%</span>
+              </div>
+              <div class="evalitem">
+                <span class="avatar avatar--sm">IK</span>
+                <div class="evalitem__body"><div class="evalitem__name">Issouf Kone</div><div class="evalitem__meta">Opérateur Bulldozer · Sissengué</div></div>
+                <span class="evalitem__score">56%</span>
+              </div>
+              <div class="evalitem">
+                <span class="avatar avatar--sm">ZK</span>
+                <div class="evalitem__body"><div class="evalitem__name">Zie Kone</div><div class="evalitem__meta">Offsider Drilling · Sissengué</div></div>
+                <span class="evalitem__score">41%</span>
+              </div>
+              <div class="evalitem">
+                <span class="avatar avatar--sm">DC</span>
+                <div class="evalitem__body"><div class="evalitem__name">Dognimin Coulibaly</div><div class="evalitem__meta">Leading Hand Production · Sissengué</div></div>
+                <span class="evalitem__score">75%</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Panneau d'évaluation — Anzoumana Diakite (sélectionné) -->
+          <section class="panel" style="flex:1;min-width:0">
+            <div class="evaldetail__head">
+              <div class="evaldetail__ident">
+                <div class="avatar" style="width:52px;height:52px;font-size:17px">AD</div>
+                <div>
+                  <div style="font-size:16px;font-weight:800;color:var(--ink)">Anzoumana Diakite</div>
+                  <div class="muted" style="font-size:12.5px;margin-top:1px">Opérateur Dump Truck · PRODUCTION</div>
+                  <div class="evaldetail__tags">
+                    <span class="microtag microtag--ink">Sissengué</span>
+                    <span class="microtag">PRODUCTION</span>
+                    <span class="microtag">8 compétences</span>
+                  </div>
+                </div>
+              </div>
+              <div class="ministats">
+                <div class="ministat"><b class="num">53%</b><span>Score Global</span></div>
+                <div class="ministat"><b class="num">−6</b><span>Écart Total</span></div>
+              </div>
+            </div>
+
+            <div class="nb-legend" style="margin:0;padding:12px 20px;border-top:none;border-bottom:1px solid var(--line-soft)">
+              <span><i style="background:oklch(0.975 0.004 60)"></i>1 · Initial / Apprenti</span>
+              <span><i style="background:oklch(0.938 0.006 52)"></i>2 · Opérationnel</span>
+              <span><i style="background:oklch(0.892 0.008 46)"></i>3 · Avancé / Maîtrise</span>
+              <span><i style="background:oklch(0.842 0.011 42)"></i>4 · Expert / Formateur</span>
+            </div>
+
+            <div style="padding:16px 20px">
+
+              <!-- Domaine : Production -->
+              <details class="domaingroup" open>
+                <summary>
+                  <span class="dg-name">Production</span>
+                  <span class="dg-count">(4 compétences)</span>
+                  <span class="dg-bar"><i style="width:56%"></i></span>
+                  <span class="dg-pct">56%</span>
+                  <span class="gapbadge gapbadge--gap">Gap −3</span>
+                  <span class="dg-chevron"></span>
+                </summary>
+                <div class="domaingroup__body">
+                  <div class="objcards">
+                    <section class="panel objcard">
+                      <div class="objcard__head">
+                        <span class="objcard__num">C001</span>
+                        <p class="objcard__title">Conduite d'engins miniers lourds (Dump Truck, ADT)</p>
+                        <span class="gapbadge gapbadge--ok">✓ Acquis</span>
+                      </div>
+                      <p class="objcard__meta">Niveau requis&nbsp;: 3/4</p>
+                      <div class="objcard__row">
+                        <div class="objcard__block objcard__block--eval">
+                          <span class="objcard__label">Niveau actuel</span>
+                          <div class="rating"><button>1</button><button>2</button><button class="is-on">3</button><button>4</button></div>
+                          <span class="eval-label">Avancé / Maîtrise</span>
+                        </div>
+                      </div>
+                    </section>
+                    <section class="panel objcard">
+                      <div class="objcard__head">
+                        <span class="objcard__num">C002</span>
+                        <p class="objcard__title">Opération de pelle hydraulique et chargeurs</p>
+                        <span class="gapbadge gapbadge--gap">Gap −1</span>
+                      </div>
+                      <p class="objcard__meta">Niveau requis&nbsp;: 3/4</p>
+                      <div class="objcard__row">
+                        <div class="objcard__block objcard__block--eval">
+                          <span class="objcard__label">Niveau actuel</span>
+                          <div class="rating"><button>1</button><button class="is-on">2</button><button>3</button><button>4</button></div>
+                          <span class="eval-label">Opérationnel</span>
+                        </div>
+                      </div>
+                    </section>
+                    <section class="panel objcard">
+                      <div class="objcard__head">
+                        <span class="objcard__num">C005</span>
+                        <p class="objcard__title">Gestion de la production journalière et reporting</p>
+                        <span class="gapbadge gapbadge--ok">✓ Acquis</span>
+                      </div>
+                      <p class="objcard__meta">Niveau requis&nbsp;: 2/4</p>
+                      <div class="objcard__row">
+                        <div class="objcard__block objcard__block--eval">
+                          <span class="objcard__label">Niveau actuel</span>
+                          <div class="rating"><button>1</button><button>2</button><button class="is-on">3</button><button>4</button></div>
+                          <span class="eval-label">Avancé / Maîtrise</span>
+                        </div>
+                      </div>
+                    </section>
+                    <section class="panel objcard">
+                      <div class="objcard__head">
+                        <span class="objcard__num">C006</span>
+                        <p class="objcard__title">Supervision d'équipes de production</p>
+                        <span class="gapbadge gapbadge--gap">Gap −2</span>
+                      </div>
+                      <p class="objcard__meta">Niveau requis&nbsp;: 3/4</p>
+                      <div class="objcard__row">
+                        <div class="objcard__block objcard__block--eval">
+                          <span class="objcard__label">Niveau actuel</span>
+                          <div class="rating"><button class="is-on">1</button><button>2</button><button>3</button><button>4</button></div>
+                          <span class="eval-label">Initial / Apprenti</span>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </details>
+
+              <!-- Domaine : HSE -->
+              <details class="domaingroup">
+                <summary>
+                  <span class="dg-name">HSE</span>
+                  <span class="dg-count">(1 compétence)</span>
+                  <span class="dg-bar"><i style="width:50%"></i></span>
+                  <span class="dg-pct">50%</span>
+                  <span class="gapbadge gapbadge--gap">Gap −1</span>
+                  <span class="dg-chevron"></span>
+                </summary>
+                <div class="domaingroup__body">
+                  <div class="objcards">
+                    <section class="panel objcard">
+                      <div class="objcard__head">
+                        <span class="objcard__num">C016</span>
+                        <p class="objcard__title">Gestion des risques et analyse HIRA/JSA</p>
+                        <span class="gapbadge gapbadge--gap">Gap −1</span>
+                      </div>
+                      <p class="objcard__meta">Niveau requis&nbsp;: 3/4</p>
+                      <div class="objcard__row">
+                        <div class="objcard__block objcard__block--eval">
+                          <span class="objcard__label">Niveau actuel</span>
+                          <div class="rating"><button>1</button><button class="is-on">2</button><button>3</button><button>4</button></div>
+                          <span class="eval-label">Opérationnel</span>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </details>
+
+              <!-- Domaine : Leadership & Encadrement -->
+              <details class="domaingroup">
+                <summary>
+                  <span class="dg-name">Leadership &amp; Encadrement</span>
+                  <span class="dg-count">(1 compétence)</span>
+                  <span class="dg-bar"><i style="width:25%"></i></span>
+                  <span class="dg-pct">25%</span>
+                  <span class="gapbadge gapbadge--gap">Gap −2</span>
+                  <span class="dg-chevron"></span>
+                </summary>
+                <div class="domaingroup__body">
+                  <div class="objcards">
+                    <section class="panel objcard">
+                      <div class="objcard__head">
+                        <span class="objcard__num">C036</span>
+                        <p class="objcard__title">Leadership et management d'équipe</p>
+                        <span class="gapbadge gapbadge--gap">Gap −2</span>
+                      </div>
+                      <p class="objcard__meta">Niveau requis&nbsp;: 3/4</p>
+                      <div class="objcard__row">
+                        <div class="objcard__block objcard__block--eval">
+                          <span class="objcard__label">Niveau actuel</span>
+                          <div class="rating"><button class="is-on">1</button><button>2</button><button>3</button><button>4</button></div>
+                          <span class="eval-label">Initial / Apprenti</span>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </details>
+
+              <!-- Domaine : Interpersonnel -->
+              <details class="domaingroup">
+                <summary>
+                  <span class="dg-name">Interpersonnel</span>
+                  <span class="dg-count">(1 compétence)</span>
+                  <span class="dg-bar"><i style="width:50%"></i></span>
+                  <span class="dg-pct">50%</span>
+                  <span class="dg-chevron"></span>
+                </summary>
+                <div class="domaingroup__body">
+                  <div class="objcards">
+                    <section class="panel objcard">
+                      <div class="objcard__head">
+                        <span class="objcard__num">C037</span>
+                        <p class="objcard__title">Communication et présentation</p>
+                        <span class="gapbadge gapbadge--ok">✓ Acquis</span>
+                      </div>
+                      <p class="objcard__meta">Niveau requis&nbsp;: 2/4</p>
+                      <div class="objcard__row">
+                        <div class="objcard__block objcard__block--eval">
+                          <span class="objcard__label">Niveau actuel</span>
+                          <div class="rating"><button>1</button><button class="is-on">2</button><button>3</button><button>4</button></div>
+                          <span class="eval-label">Opérationnel</span>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </details>
+
+              <!-- Domaine : Efficacité Personnelle -->
+              <details class="domaingroup">
+                <summary>
+                  <span class="dg-name">Efficacité Personnelle</span>
+                  <span class="dg-count">(1 compétence)</span>
+                  <span class="dg-bar"><i style="width:75%"></i></span>
+                  <span class="dg-pct">75%</span>
+                  <span class="dg-chevron"></span>
+                </summary>
+                <div class="domaingroup__body">
+                  <div class="objcards">
+                    <section class="panel objcard">
+                      <div class="objcard__head">
+                        <span class="objcard__num">C048</span>
+                        <p class="objcard__title">Orienté Résultat</p>
+                        <span class="gapbadge gapbadge--ok">✓ Acquis</span>
+                      </div>
+                      <p class="objcard__meta">Niveau requis&nbsp;: 3/4</p>
+                      <div class="objcard__row">
+                        <div class="objcard__block objcard__block--eval">
+                          <span class="objcard__label">Niveau actuel</span>
+                          <div class="rating"><button>1</button><button>2</button><button class="is-on">3</button><button>4</button></div>
+                          <span class="eval-label">Avancé / Maîtrise</span>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </details>
+
+            </div>
+
+            <div class="evaldetail__foot">
+              <span class="muted" style="font-size:11.5px">Cliquez sur 1→4 pour noter chaque compétence, puis enregistrez</span>
+              <div class="row" style="gap:10px">
+                <button class="btn btn--ghost">Fermer</button>
+                <button class="btn btn--primary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+                  Enregistrer l'évaluation
+                </button>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- ============================================================
+           ONGLET 3 — GAPS & PRIORITÉS
+      ============================================================= -->
+      <div data-tabpanel="gaps" style="display:none">
+        <div class="objcards">
+
+          <section class="panel gapcard">
+            <div class="gapcard__head">
+              <span class="objcard__num">C006</span>
+              <span class="gapbadge gapbadge--gap">Gap moyen&nbsp;: 0,9</span>
+              <span class="muted" style="font-size:12px">6 collaborateurs sous le niveau requis</span>
+            </div>
+            <p class="gapcard__title">Supervision d'équipes de production</p>
+            <div class="gapcard__meter">
+              <div class="reqbar"><div class="bar"><i style="width:52.5%"></i></div><div class="reqbar__marker" style="left:75%"></div></div>
+              <span class="gapcard__meter-val">2,1/4 (requis&nbsp;: 3)</span>
+            </div>
+            <div class="gapcard__names">
+              <span class="namechip">Anzoumana</span><span class="namechip">Issiaka</span><span class="namechip">Siaka</span>
+              <span class="namechip">Kamoko</span><span class="namechip">Issouf</span><span class="namechip">Zie</span>
+            </div>
+            <div class="gapcard__training">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <div>
+                <b>Formation recommandée : Supervision Production Mine</b>
+                4 j · CORICA Interne · Interne · 450K FCFA/pers ×6 = <strong style="color:var(--ink)">2,70M FCFA</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel gapcard">
+            <div class="gapcard__head">
+              <span class="objcard__num">C036</span>
+              <span class="gapbadge gapbadge--gap">Gap moyen&nbsp;: 0,9</span>
+              <span class="muted" style="font-size:12px">6 collaborateurs sous le niveau requis</span>
+            </div>
+            <p class="gapcard__title">Leadership et management d'équipe</p>
+            <div class="gapcard__meter">
+              <div class="reqbar"><div class="bar"><i style="width:52.5%"></i></div><div class="reqbar__marker" style="left:75%"></div></div>
+              <span class="gapcard__meter-val">2,1/4 (requis&nbsp;: 3)</span>
+            </div>
+            <div class="gapcard__names">
+              <span class="namechip">Anzoumana</span><span class="namechip">Issiaka</span><span class="namechip">Siaka</span>
+              <span class="namechip">Kamoko</span><span class="namechip">Issouf</span><span class="namechip">Zie</span>
+            </div>
+            <div class="gapcard__training">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <div>
+                <b>Formation recommandée : Leadership &amp; Management d'Équipe</b>
+                3 j · CORICA Interne · Interne · 420K FCFA/pers ×6 = <strong style="color:var(--ink)">2,52M FCFA</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel gapcard">
+            <div class="gapcard__head">
+              <span class="objcard__num">C016</span>
+              <span class="gapbadge gapbadge--gap">Gap moyen&nbsp;: 0,6</span>
+              <span class="muted" style="font-size:12px">5 collaborateurs sous le niveau requis</span>
+            </div>
+            <p class="gapcard__title">Gestion des risques et analyse HIRA/JSA</p>
+            <div class="gapcard__meter">
+              <div class="reqbar"><div class="bar"><i style="width:60%"></i></div><div class="reqbar__marker" style="left:75%"></div></div>
+              <span class="gapcard__meter-val">2,4/4 (requis&nbsp;: 3)</span>
+            </div>
+            <div class="gapcard__names">
+              <span class="namechip">Anzoumana</span><span class="namechip">Siaka</span><span class="namechip">Kamoko</span>
+              <span class="namechip">Issouf</span><span class="namechip">Zie</span>
+            </div>
+            <div class="gapcard__training">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <div>
+                <b>Formation recommandée : Gestion des Risques et HIRA</b>
+                2 j · Bureau Veritas · Externe · 280K FCFA/pers ×5 = <strong style="color:var(--ink)">1,40M FCFA</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel gapcard">
+            <div class="gapcard__head">
+              <span class="objcard__num">C002</span>
+              <span class="gapbadge gapbadge--gap">Gap moyen&nbsp;: 0,4</span>
+              <span class="muted" style="font-size:12px">4 collaborateurs sous le niveau requis</span>
+            </div>
+            <p class="gapcard__title">Opération de pelle hydraulique et chargeurs</p>
+            <div class="gapcard__meter">
+              <div class="reqbar"><div class="bar"><i style="width:65%"></i></div><div class="reqbar__marker" style="left:75%"></div></div>
+              <span class="gapcard__meter-val">2,6/4 (requis&nbsp;: 3)</span>
+            </div>
+            <div class="gapcard__names">
+              <span class="namechip">Anzoumana</span><span class="namechip">Fiacre</span><span class="namechip">Kamoko</span><span class="namechip">Issouf</span>
+            </div>
+            <div class="gapcard__training">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <div>
+                <b>Formation recommandée : Opération Pelle P&amp;H 4100</b>
+                7 j · Komatsu Mining · Externe · 1200K FCFA/pers ×4 = <strong style="color:var(--ink)">4,80M FCFA</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel gapcard">
+            <div class="gapcard__head">
+              <span class="objcard__num">C001</span>
+              <span class="gapbadge gapbadge--gap">Gap moyen&nbsp;: 0,3</span>
+              <span class="muted" style="font-size:12px">4 collaborateurs sous le niveau requis</span>
+            </div>
+            <p class="gapcard__title">Conduite d'engins miniers lourds (Dump Truck, ADT)</p>
+            <div class="gapcard__meter">
+              <div class="reqbar"><div class="bar"><i style="width:67.5%"></i></div><div class="reqbar__marker" style="left:75%"></div></div>
+              <span class="gapcard__meter-val">2,7/4 (requis&nbsp;: 3)</span>
+            </div>
+            <div class="gapcard__names">
+              <span class="namechip">Siaka</span><span class="namechip">Fiacre</span><span class="namechip">Kamoko</span><span class="namechip">Zie</span>
+            </div>
+            <div class="gapcard__training">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <div>
+                <b>Formation recommandée : Conduite Sécurisée Dump Truck CAT 785</b>
+                5 j · Caterpillar Training · Externe · 850K FCFA/pers ×4 = <strong style="color:var(--ink)">3,40M FCFA</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel gapcard">
+            <div class="gapcard__head">
+              <span class="objcard__num">C048</span>
+              <span class="gapbadge gapbadge--gap">Gap moyen&nbsp;: 0,3</span>
+              <span class="muted" style="font-size:12px">4 collaborateurs sous le niveau requis</span>
+            </div>
+            <p class="gapcard__title">Orienté Résultat</p>
+            <div class="gapcard__meter">
+              <div class="reqbar"><div class="bar"><i style="width:67.5%"></i></div><div class="reqbar__marker" style="left:75%"></div></div>
+              <span class="gapcard__meter-val">2,7/4 (requis&nbsp;: 3)</span>
+            </div>
+            <div class="gapcard__names">
+              <span class="namechip">Issiaka</span><span class="namechip">Siaka</span><span class="namechip">Kamoko</span><span class="namechip">Zie</span>
+            </div>
+            <div class="gapcard__training">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <div>
+                <b>Formation recommandée : Autonomie &amp; Orientation Résultat</b>
+                1 j · CORICA Interne · Interne · 130K FCFA/pers ×4 = <strong style="color:var(--ink)">0,52M FCFA</strong>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- ============================================================
+           ONGLET 4 — FORMATIONS DISPONIBLES
+      ============================================================= -->
+      <div data-tabpanel="catalogue" style="display:none">
+        <section class="panel">
+          <div class="panel__head">
+            <h2>Formations disponibles pour votre équipe · PRODUCTION</h2>
+            <span class="sub">10 formations du catalogue liées aux compétences du département</span>
+          </div>
+          <div class="panel__body">
+            <div class="traincard-grid">
+
+              <div class="traincard">
+                <span class="traincard__title">Conduite Sécurisée Dump Truck CAT 785</span>
+                <span class="traincard__meta">5 jours · Caterpillar Training</span>
+                <span class="typebadge typebadge--externe">Externe</span>
+                <b class="num" style="font-size:14px">850K FCFA</b>
+                <div class="traincard__tags"><span class="objcard__num">C001</span></div>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Opération Pelle P&amp;H 4100</span>
+                <span class="traincard__meta">7 jours · Komatsu Mining</span>
+                <span class="typebadge typebadge--externe">Externe</span>
+                <b class="num" style="font-size:14px">1200K FCFA</b>
+                <div class="traincard__tags"><span class="objcard__num">C002</span></div>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Supervision Production Mine</span>
+                <span class="traincard__meta">4 jours · CORICA Interne</span>
+                <span class="typebadge typebadge--interne">Interne</span>
+                <b class="num" style="font-size:14px">450K FCFA</b>
+                <div class="traincard__tags"><span class="objcard__num">C005</span><span class="objcard__num">C006</span></div>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Gestion des Risques et HIRA</span>
+                <span class="traincard__meta">2 jours · Bureau Veritas</span>
+                <span class="typebadge typebadge--externe">Externe</span>
+                <b class="num" style="font-size:14px">280K FCFA</b>
+                <div class="traincard__tags"><span class="objcard__num">C016</span></div>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Leadership &amp; Management d'Équipe</span>
+                <span class="traincard__meta">3 jours · CORICA Interne</span>
+                <span class="typebadge typebadge--interne">Interne</span>
+                <b class="num" style="font-size:14px">420K FCFA</b>
+                <div class="traincard__tags"><span class="objcard__num">C036</span><span class="objcard__num">C040</span></div>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Communication et Présentation Efficace</span>
+                <span class="traincard__meta">2 jours · CORICA Interne</span>
+                <span class="typebadge typebadge--interne">Interne</span>
+                <b class="num" style="font-size:14px">240K FCFA</b>
+                <div class="traincard__tags"><span class="objcard__num">C037</span></div>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Gestion du Temps &amp; Organisation du Travail</span>
+                <span class="traincard__meta">1 jour · CORICA Interne</span>
+                <span class="typebadge typebadge--interne">Interne</span>
+                <b class="num" style="font-size:14px">120K FCFA</b>
+                <div class="traincard__tags"><span class="objcard__num">C041</span><span class="objcard__num">C047</span></div>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Résilience &amp; Adaptabilité en Milieu Minier</span>
+                <span class="traincard__meta">2 jours · CORICA Interne</span>
+                <span class="typebadge typebadge--interne">Interne</span>
+                <b class="num" style="font-size:14px">200K FCFA</b>
+                <div class="traincard__tags"><span class="objcard__num">C042</span><span class="objcard__num">C044</span><span class="objcard__num">C045</span></div>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Autonomie &amp; Orientation Résultat</span>
+                <span class="traincard__meta">1 jour · CORICA Interne</span>
+                <span class="typebadge typebadge--interne">Interne</span>
+                <b class="num" style="font-size:14px">130K FCFA</b>
+                <div class="traincard__tags"><span class="objcard__num">C043</span><span class="objcard__num">C046</span><span class="objcard__num">C048</span></div>
+              </div>
+
+              <div class="traincard">
+                <span class="traincard__title">Communication Interpersonnelle &amp; Travail en Équipe</span>
+                <span class="traincard__meta">2 jours · CORICA Interne</span>
+                <span class="typebadge typebadge--interne">Interne</span>
+                <b class="num" style="font-size:14px">180K FCFA</b>
+                <div class="traincard__tags"><span class="objcard__num">C049</span><span class="objcard__num">C050</span><span class="objcard__num">C051</span></div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+<script>
+  /* Bascule des 4 onglets de cet écran (même mécanique que employe/competences.html :
+     .chipfilter est déjà géré visuellement, ici on montre/masque les data-tabpanel associés). */
+  (function () {
+    "use strict";
+    var chips = document.querySelectorAll("[data-tab]");
+    var panels = document.querySelectorAll("[data-tabpanel]");
+    chips.forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        var key = chip.getAttribute("data-tab");
+        chips.forEach(function (c) { c.classList.toggle("is-on", c === chip); });
+        panels.forEach(function (p) {
+          p.style.display = (p.getAttribute("data-tabpanel") === key) ? "" : "none";
+        });
+      });
+    });
+  })();
+</script>
+</body>
+</html>

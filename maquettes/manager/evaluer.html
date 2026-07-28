@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Évaluer — Anzoumana Diakité</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  /* Mécanique de coque reprise telle quelle du gabarit manager/equipe.html —
+     ces classes ne sont pas définies dans assets/app.css, donc dupliquées localement ici. */
+  .rail__logout {
+    margin-left: auto; width: 30px; height: 30px; flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rail-2); color: var(--rail-faint);
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+
+  .avatar-link { display: inline-flex; }
+
+  /* ---- Retour + fil d'Ariane du sous-flux ----
+     .breadcrumb existe déjà dans app.css (§ Patterns rôles). Le lien « ← Retour »
+     n'a pas de pattern dédié ailleurs dans le chantier : bouton ghost + icône flèche. */
+  .subnav { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 4px; }
+  .subnav .breadcrumb { margin-bottom: 0; }
+
+  /* ---- Tables d'évaluation (auto-évaluation employé + évaluation N+1) ----
+     .table (app.css) sert les listes simples à une ligne de contenu par cellule ; il ne fournit
+     pas de variante « bandeau de titre coloré + cellules verticales + pied de synthèse » pour une
+     grille d'évaluation multi-lignes. Pattern absent d'app.css → étendu localement ici.
+     Design-lock : le bandeau vert « lecture seule » de la source (#2B5C3F) n'est pas dans la palette
+     stricte neutres+orange → remplacé par un remplissage neutre encre (--ink). L'orange reste réservé
+     à la table N+1 (colonne de saisie), conformément à « ORANGE = ACTIONS UNIQUEMENT ». */
+  .evaltable-wrap { border: 1px solid var(--line); background: var(--surface); }
+  .evaltable-wrap + .evaltable-wrap { margin-top: 28px; }
+  .evaltable-wrap--n1 { border-color: var(--corica-orange); }
+
+  .evaltable__band { padding: 10px 18px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: baseline; gap: 8px; }
+  .evaltable__band--ro { background: var(--ink); color: var(--surface); }
+  .evaltable__band--ro span { font-weight: 500; text-transform: none; letter-spacing: 0; color: oklch(1 0 0 / 0.6); font-size: 10.5px; }
+  .evaltable__band--n1 { background: var(--corica-orange); color: var(--on-orange); }
+
+  .evaltable { width: 100%; border-collapse: collapse; font-size: 12.5px; table-layout: fixed; }
+  .evaltable th {
+    background: var(--surface-2); color: var(--ink-soft); font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 10px; text-align: left;
+    border-bottom: 1px solid var(--line); border-right: 1px solid var(--line-soft);
+  }
+  .evaltable-wrap--n1 .evaltable th { background: oklch(0.975 0.018 55); border-bottom-color: var(--corica-orange-ring); }
+  .evaltable th:last-child, .evaltable td:last-child { border-right: none; }
+  .evaltable td { padding: 12px 10px; border-bottom: 1px solid var(--line-soft); border-right: 1px solid var(--line-soft); vertical-align: top; }
+  .evaltable tbody tr:last-child td { border-bottom: none; }
+  .evaltable-wrap--ro .evaltable tbody tr { background: var(--surface-2); } /* remplissage neutre = distinction lecture-seule */
+  .evaltable__obj { font-weight: 700; color: var(--ink); text-align: center; }
+  .evaltable__desc { color: var(--ink); }
+  .evaltable__measure { color: var(--ink-soft); }
+  .evaltable__deadline { text-align: center; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .evaltable__eval { text-align: center; width: 92px; }
+  .evaltable__ro-note { font-size: 10.5px; text-align: center; color: var(--ink-faint); line-height: 1.4; }
+
+  .evaltable .textarea { min-height: 68px; font-size: 11.5px; padding: 8px 9px; resize: none; }
+
+  /* Notation étoiles /4 — absente d'app.css (qui n'offre que .rating, une échelle à pastilles
+     numérotées) ; le précédent employe/evaluation.html l'imite via l'icône étoile pour la synthèse
+     uniquement. Ici la notation par ligne se fait en étoiles pleines, conformément à la source. */
+  .starscale { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .starscale__row { display: flex; gap: 3px; }
+  .starscale__row svg { width: 13px; height: 13px; color: var(--line); }
+  .starscale__row svg.is-on { color: var(--ink); }
+  .starscale__label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-faint); }
+  .starscale--n1 .starscale__row svg { width: 16px; height: 16px; }
+  .starscale--n1 .starscale__row svg.is-on { color: var(--corica-orange); }
+  .starscale--n1 .starscale__label { color: var(--corica-orange); }
+
+  .evaltable__foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 16px 22px; background: var(--surface-2); border-top: 1px solid var(--line);
+  }
+  .evaltable__foot--center { justify-content: center; }
+  .evaltable__foot-label { font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
+  .evaltable__foot-value { font-size: 24px; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .evaltable__foot-value svg { width: 18px; height: 18px; color: var(--ink); }
+  .evaltable__foot-value--n1 { font-size: 28px; color: var(--corica-orange); }
+  .evaltable__foot-value--n1 svg { color: var(--corica-orange); }
+  .evaltable__foot-count { text-align: right; }
+  .evaltable__foot-count b { display: block; font-size: 18px; font-weight: 800; color: var(--ink); margin-top: 4px; }
+
+  /* Blocs Commentaires Manager / Besoins en Formation — cartes .panel standard, pas de pattern
+     supplémentaire nécessaire. Palette : libellés en encre neutre (pas de vert/olive hors-palette). */
+  .evalgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 28px; }
+  .evalgrid .panel__body { display: flex; flex-direction: column; gap: 10px; }
+  .evalgrid label { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: var(--ink); }
+  .evalgrid label svg { width: 15px; height: 15px; color: var(--ink-soft); }
+  .formation-row { display: flex; gap: 8px; }
+  .formation-row .input { flex: 1; }
+  .formation-row__del {
+    width: 36px; height: 36px; flex: none; display: grid; place-items: center;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-faint); cursor: pointer;
+  }
+  .formation-row__del:hover { color: var(--corica-orange); border-color: var(--corica-orange); } /* cohérent avec .icon-del de employe/objectifs.html */
+  .formation-add {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; color: var(--ink-soft); background: none; border: none; cursor: pointer; padding: 2px 0;
+  }
+  .formation-add:hover { color: var(--corica-orange); }
+  .formation-add svg { width: 13px; height: 13px; }
+
+  /* Footer d'actions — même pattern local que .evalfoot de employe/evaluation.html. */
+  .evalfoot {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    margin-top: 24px; padding: 16px 20px; background: var(--surface-2); border-top: 1px solid var(--line);
+  }
+  .evalfoot__actions { display: flex; gap: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Espace Manager</div>
+    <a class="navitem is-active" href="equipe.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
+      <span class="navlabel">Mon Équipe Directe</span>
+    </a>
+    <a class="navitem" href="../partages/9box.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="16" y="16" width="144" height="144"/><rect x="184" y="16" width="144" height="144"/><rect x="352" y="16" width="144" height="144"/><rect x="16" y="184" width="144" height="144"/><rect x="184" y="184" width="144" height="144"/><rect x="352" y="184" width="144" height="144"/><rect x="16" y="352" width="144" height="144"/><rect x="184" y="352" width="144" height="144"/><rect x="352" y="352" width="144" height="144"/></svg>
+      <span class="navlabel">Matrice 9-Box</span>
+    </a>
+    <a class="navitem" href="rapports.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="32" y="256" width="96" height="224"/><rect x="208" y="160" width="96" height="320"/><rect x="384" y="64" width="96" height="416"/></svg>
+      <span class="navlabel">Rapports</span>
+    </a>
+    <a class="navitem" href="competences-equipe.html">
+      <svg viewBox="0 0 576 512" fill="currentColor"><path d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"/></svg>
+      <span class="navlabel">Compétences</span>
+    </a>
+    <a class="navitem" href="inbox.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M96 64C60.7 64 32 92.7 32 128l0 256c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64L96 64zM64 128c0-17.7 14.3-32 32-32l320 0c17.7 0 32 14.3 32 32l0 96-96 0c-8.8 0-16 5.9-18.3 14.4C325 264.6 302 288 256 288s-69-23.4-77.7-49.6C176 229.9 168.8 224 160 224l-96 0 0-96zm0 128 82.7 0c14.3 33.5 51.3 64 109.3 64s95-30.5 109.3-64L448 256l0 128c0 17.7-14.3 32-32 32L96 416c-17.7 0-32-14.3-32-32l0-128z"/></svg>
+      <span class="navlabel">Inbox &amp; Approbations</span>
+    </a>
+    <a class="navitem" href="arbitrage-n2.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M384 32l128 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L398.4 96c-5.2 25.8-22.9 47.1-46.4 57.3L352 448l160 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-192 0-192 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l160 0 0-294.7c-23.5-10.3-41.2-31.6-46.4-57.3L128 96c-17.7 0-32-14.3-32-32s14.3-32 32-32l128 0c14.6-19.4 37.8-32 64-32s49.4 12.6 64 32zm55.6 288l144.9 0L512 214.3 439.6 320zM512 384c-62.9 0-115.2-34-126.9-79.1c-3.5-13.5 4.2-27.2 15.9-34.7l108.4-158.4c9.8-14.3 30.6-14.3 40.4 0L659.6 270.2c11.6 7.5 19.4 21.2 15.9 34.7C627.2 350 574.9 384 512 384zM126.9 320c-62.9 0-115.2-34-126.9-79.1c-3.5-13.5 4.2-27.2 15.9-34.7L124.3 47.9c9.8-14.3 30.6-14.3 40.4 0L273.1 206.2c11.6 7.5 19.4 21.2 15.9 34.7C277.2 286 224.9 320 162 320l-35.1 0z"/></svg>
+      <span class="navlabel">Arbitrage N+2</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="profil.html" title="Voir mon profil">
+        <div class="avatar">MT</div>
+        <div class="who"><b>Mamadou Traoré</b><small>MANAGER</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Évaluation du Manager</h1>
+        <p>Anzoumana Diakité · Matricule 10057 · Campagne 2026</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <span class="pill pill--closed">Accès Confidentiel</span>
+      <button class="iconbtn js-notif"><span class="dot"></span>
+        <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224 0c-17.7 0-32 14.3-32 32l0 19.2C119 66 64 130.6 64 208l0 18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416l384 0c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8l0-18.8c0-77.4-55-142-128-156.8L256 32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3l-64 0-64 0c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"/></svg>
+      </button>
+      <a class="avatar-link" href="profil.html" title="Mon profil"><div class="avatar avatar--sm">MT</div></a>
+    </header>
+
+    <div class="content">
+
+      <!-- Retour + fil d'Ariane du sous-flux -->
+      <div class="subnav">
+        <a class="btn btn--ghost" href="equipe.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Retour
+        </a>
+        <nav class="breadcrumb">
+          <a href="equipe.html">Mon Équipe</a>
+          <span class="sep">›</span>
+          <span class="is-current">Évaluer — Anzoumana Diakité</span>
+        </nav>
+      </div>
+
+      <!-- ============================================================
+           TABLE 1 — Auto-évaluation de l'employé (lecture seule)
+      ============================================================= -->
+      <div class="evaltable-wrap evaltable-wrap--ro">
+        <div class="evaltable__band evaltable__band--ro">
+          Auto-évaluation de l'employé <span>(lecture seule)</span>
+        </div>
+        <table class="evaltable">
+          <colgroup>
+            <col style="width:13%"><col style="width:26%"><col style="width:19%">
+            <col style="width:9%"><col style="width:10%"><col style="width:12%"><col style="width:11%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Objectifs</th>
+              <th>Description de l'objectif (KPI)</th>
+              <th>Mesure</th>
+              <th>Échéance</th>
+              <th>Évaluation</th>
+              <th>Livrables</th>
+              <th>Commentaires</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="evaltable__obj">Objectif 1</td>
+              <td class="evaltable__desc">Réduire les temps d'arrêt machine — diminuer la fréquence et la durée des arrêts non planifiés sur la ligne de production, par une maintenance préventive rigoureuse et une remontée rapide des pannes.</td>
+              <td class="evaltable__measure">% de disponibilité ligne</td>
+              <td class="evaltable__deadline">31/12/2026</td>
+              <td class="evaltable__eval">
+                <div class="starscale">
+                  <div class="starscale__row">
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                  </div>
+                  <span class="starscale__label">Faible</span>
+                </div>
+              </td>
+              <td class="evaltable__ro-note">Joindre fichier — aucun document</td>
+              <td class="evaltable__ro-note">—</td>
+            </tr>
+            <tr>
+              <td class="evaltable__obj">Objectif 2</td>
+              <td class="evaltable__desc">Respecter les procédures HSE — appliquer strictement les consignes de sécurité, port des EPI et procédures de consignation sur l'ensemble du poste de travail.</td>
+              <td class="evaltable__measure">Zéro incident enregistré</td>
+              <td class="evaltable__deadline">31/12/2026</td>
+              <td class="evaltable__eval">
+                <div class="starscale">
+                  <div class="starscale__row">
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                  </div>
+                  <span class="starscale__label">Passable</span>
+                </div>
+              </td>
+              <td class="evaltable__ro-note">Registre_HSE_S2.pdf</td>
+              <td class="evaltable__ro-note">Aucun incident enregistré depuis le début de la période, vigilance maintenue sur le port des EPI.</td>
+            </tr>
+            <tr>
+              <td class="evaltable__obj">Objectif 3</td>
+              <td class="evaltable__desc">Améliorer la cadence de production — optimiser les réglages de la ligne et réduire les micro-arrêts pour augmenter le volume produit par équipe.</td>
+              <td class="evaltable__measure">Tonnes/équipe</td>
+              <td class="evaltable__deadline">31/12/2026</td>
+              <td class="evaltable__eval">
+                <div class="starscale">
+                  <div class="starscale__row">
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                  </div>
+                  <span class="starscale__label">Excellent</span>
+                </div>
+              </td>
+              <td class="evaltable__ro-note">Joindre fichier — aucun document</td>
+              <td class="evaltable__ro-note">Cadence en nette progression depuis le dernier trimestre, micro-arrêts réduits sur mon poste.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="evaltable__foot">
+          <div>
+            <div class="evaltable__foot-label">Note moyenne</div>
+            <div class="evaltable__foot-value">2,3/4
+              <svg viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+            </div>
+          </div>
+          <div class="evaltable__foot-count">
+            <div class="evaltable__foot-label">Objectifs évalués</div>
+            <b>3/3</b>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           TABLE 2 — Votre évaluation (N+1) — saisie
+      ============================================================= -->
+      <div class="evaltable-wrap evaltable-wrap--n1">
+        <div class="evaltable__band evaltable__band--n1">Votre évaluation (N+1)</div>
+        <table class="evaltable">
+          <colgroup>
+            <col style="width:11%"><col style="width:22%"><col style="width:16%">
+            <col style="width:8%"><col style="width:10%"><col style="width:17%"><col style="width:16%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Objectifs</th>
+              <th>Description de l'objectif (KPI)</th>
+              <th>Mesure</th>
+              <th>Échéance</th>
+              <th>Évaluation</th>
+              <th>Livrables</th>
+              <th>Commentaires</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="evaltable__obj">Objectif 1</td>
+              <td class="evaltable__desc">Réduire les temps d'arrêt machine — diminuer la fréquence et la durée des arrêts non planifiés sur la ligne de production, par une maintenance préventive rigoureuse et une remontée rapide des pannes.</td>
+              <td class="evaltable__measure">% de disponibilité ligne</td>
+              <td class="evaltable__deadline">31/12/2026</td>
+              <td class="evaltable__eval">
+                <div class="starscale starscale--n1">
+                  <div class="starscale__row">
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                  </div>
+                  <span class="starscale__label">Passable</span>
+                </div>
+              </td>
+              <td><textarea class="textarea" placeholder="Livrables attendus ou réalisés…">Rapport de maintenance juillet–décembre reçu.</textarea></td>
+              <td><textarea class="textarea" placeholder="Vos commentaires…">Progression réelle sur la disponibilité de la ligne, l'objectif n'est pas encore pleinement atteint. À maintenir au prochain trimestre.</textarea></td>
+            </tr>
+            <tr>
+              <td class="evaltable__obj">Objectif 2</td>
+              <td class="evaltable__desc">Respecter les procédures HSE — appliquer strictement les consignes de sécurité, port des EPI et procédures de consignation sur l'ensemble du poste de travail.</td>
+              <td class="evaltable__measure">Zéro incident enregistré</td>
+              <td class="evaltable__deadline">31/12/2026</td>
+              <td class="evaltable__eval">
+                <div class="starscale starscale--n1">
+                  <div class="starscale__row">
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                  </div>
+                  <span class="starscale__label">Bon</span>
+                </div>
+              </td>
+              <td><textarea class="textarea" placeholder="Livrables attendus ou réalisés…">Registre_HSE_S2.pdf réceptionné et validé, aucun incident recensé.</textarea></td>
+              <td><textarea class="textarea" placeholder="Vos commentaires…">Application rigoureuse des consignes de sécurité, aucun incident signalé sur la période.</textarea></td>
+            </tr>
+            <tr>
+              <td class="evaltable__obj">Objectif 3</td>
+              <td class="evaltable__desc">Améliorer la cadence de production — optimiser les réglages de la ligne et réduire les micro-arrêts pour augmenter le volume produit par équipe.</td>
+              <td class="evaltable__measure">Tonnes/équipe</td>
+              <td class="evaltable__deadline">31/12/2026</td>
+              <td class="evaltable__eval">
+                <div class="starscale starscale--n1">
+                  <div class="starscale__row">
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                    <svg class="is-on" viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                  </div>
+                  <span class="starscale__label">Excellent</span>
+                </div>
+              </td>
+              <td><textarea class="textarea" placeholder="Livrables attendus ou réalisés…">Suivi_tonnage_S2.xlsx réceptionné, cadence en hausse sur le dernier trimestre.</textarea></td>
+              <td><textarea class="textarea" placeholder="Vos commentaires…">Cadence en nette progression, gains significatifs sur la réduction des micro-arrêts.</textarea></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="evaltable__foot evaltable__foot--center">
+          <div style="text-align:center">
+            <div class="evaltable__foot-label">Note moyenne Manager</div>
+            <div class="evaltable__foot-value evaltable__foot-value--n1">3,0/4
+              <svg viewBox="0 0 576 512" fill="currentColor"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           Commentaires Manager / Besoins en Formation
+      ============================================================= -->
+      <div class="evalgrid">
+        <section class="panel">
+          <div class="panel__body">
+            <label>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Commentaires Manager
+            </label>
+            <textarea class="textarea" style="min-height:100px" placeholder="Votre évaluation globale…">Anzoumana confirme sa maîtrise technique et son engagement HSE. Bon calibrage attendu pour une évolution vers un rôle de chef d'équipe en 2027. Poursuivre l'accompagnement sur la disponibilité des équipements.</textarea>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel__body">
+            <label>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              Besoins en Formation
+            </label>
+            <div class="formation-row">
+              <input class="input" value="Certification maintenance prédictive (niveau 2)" placeholder="Formation 1">
+              <button type="button" class="formation-row__del" title="Retirer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            </div>
+            <div class="formation-row">
+              <input class="input" value="Formation Leadership terrain — préparation évolution chef d'équipe" placeholder="Formation 2">
+              <button type="button" class="formation-row__del" title="Retirer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            </div>
+            <button type="button" class="formation-add">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              Ajouter une formation
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Footer -->
+      <div class="evalfoot">
+        <a class="btn btn--ghost" href="equipe.html">Annuler</a>
+        <div class="evalfoot__actions">
+          <button class="btn btn--ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Imprimer
+          </button>
+          <a class="btn btn--primary" href="equipe.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            Soumettre l'évaluation
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Réviser les KPIs — Anzoumana Diakité</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  /* Mécanique de coque reprise telle quelle de manager/equipe.html (gabarit de cet écran) —
+     ces classes ne sont pas définies dans assets/app.css, donc dupliquées localement ici. */
+  .rail__logout {
+    margin-left: auto; width: 30px; height: 30px; flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rail-2); color: var(--rail-faint);
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+
+  .avatar-link { display: inline-flex; }
+
+  /* ---- Statuts de campagne (5 paliers) ----
+     Repris à l'identique d'equipe.html (non utilisés sur cet écran, conservés pour
+     cohérence de gabarit — voir commentaire complet dans equipe.html). */
+  .pill--kpi-approved { background: var(--surface-2); color: var(--ink); border: 1px solid var(--ink-soft); }
+  .pill--kpi-approved::before { background: var(--ink-soft); }
+  .pill--n1-done { background: oklch(0.892 0.008 46); color: var(--ink); }
+  .pill--n1-done::before { background: var(--ink); opacity: 0.55; }
+
+  /* ============================================================
+     AJOUTS LOCAUX — spécifiques à cet écran (Révision & Validation des KPIs).
+     Source : src/components/mockups/MyTeamMockup.tsx → ModalReviewKpis (L83-258).
+     PATTERN MANQUANT DANS app.css : ni le bandeau d'accent contextuel (ambre),
+     ni la carte-objectif "à valider" (bloc header + champs éditables + bouton
+     Valider par item) n'existent comme composants partagés. Ils sont donc
+     définis ici, sans toucher à assets/app.css. Si un futur écran manager
+     réutilise ce pattern, il pourrait migrer vers app.css sous un nom du type
+     .kpicard / .kpi-context.
+     ============================================================ */
+
+  /* Bandeau de section — accent AMBRE contextuel.
+     Dans le code source, l'accent #d97706 habille tout l'en-tête de la modale
+     (fond plein). Ici, le design-lock réserve l'orange plein aux actions :
+     l'ambre est donc rendu en teinte SOBRE (fond très clair + liseré), jamais
+     en aplat, et sur une palette de teinte différente (plus jaune/dorée) de
+     --corica-orange (plus rouge-brique) pour ne jamais se confondre avec un
+     bouton d'action. Variables locales à ce fichier uniquement. */
+  :root {
+    --accent-amber:      oklch(0.700 0.140 70);   /* ≈ #d97706, teinte plus jaune que --corica-orange (hue 45) */
+    --accent-amber-ink:  oklch(0.480 0.120 68);
+    --accent-amber-soft: oklch(0.965 0.030 78);
+    --accent-amber-line: oklch(0.865 0.075 74);
+  }
+  .kpi-context {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--accent-amber-soft); border: 1px solid var(--accent-amber-line);
+    padding: 14px 18px; margin-bottom: 20px;
+  }
+  .kpi-context svg { width: 17px; height: 17px; flex: none; margin-top: 2px; stroke: var(--accent-amber-ink); }
+  .kpi-context p { font-size: 13px; color: var(--ink-soft); line-height: 1.55; }
+  .kpi-context strong { color: var(--ink); font-weight: 700; }
+  .kpi-context .amber-count { color: var(--accent-amber-ink); font-weight: 800; }
+
+  /* Carte objectif éditable.
+     Header TOUJOURS en --ink (même convention que .table thead / .rail) : la
+     distinction "à valider / validé" ne repose pas sur une couleur inventée
+     mais sur le même codage que .pill--draft (clair, en attente) → .pill--closed
+     (rempli --ink, clos) déjà utilisé ailleurs dans le système — cohérent avec
+     la règle "orange = actions uniquement". */
+  .kpicards { display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; }
+  .kpicard { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line); transition: border-color 160ms ease, background 160ms ease; }
+  .kpicard.is-validated { border-left-color: var(--ink); background: var(--surface-2); }
+
+  .kpicard__head { background: var(--ink); color: #fff; padding: 11px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .kpicard__label { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 7px; }
+  .kpicard__label svg { width: 13px; height: 13px; stroke: var(--accent-amber); flex: none; }
+  .kpicard__done { color: var(--rail-faint); font-weight: 700; text-transform: none; letter-spacing: 0; margin-left: 2px; }
+
+  .kpicard__head .btn { padding: 6px 13px; font-size: 12px; }
+  .btn--on-dark { background: transparent; border: 1px solid rgba(255,255,255,0.38); color: #fff; }
+  .btn--on-dark:hover { background: rgba(255,255,255,0.12); }
+
+  .kpicard__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; padding: 18px; }
+  .kpicard__grid .span2 { grid-column: 1 / -1; }
+  .kpicard__stack { display: flex; flex-direction: column; gap: 16px; }
+  .kpicard .field { margin-bottom: 16px; }
+  .kpicard .field:last-child { margin-bottom: 0; }
+  .kpicard textarea.textarea { min-height: 62px; font-size: 13px; }
+
+  /* Champ verrouillé (objectif déjà validé) : même geste que le disabled du
+     code source (fond/bordure retirés, texte --ink en lecture). */
+  .kpicard .is-locked { background: transparent; border-color: transparent; color: var(--ink); cursor: default; resize: none; }
+  .kpicard .is-locked:focus { box-shadow: none; border-color: transparent; }
+
+  .kpicard__weight { display: flex; align-items: center; gap: 8px; }
+  .kpicard__weight input { width: 88px; text-align: right; }
+  .kpicard__weight .pct { font-weight: 800; color: var(--ink-soft); font-size: 13px; }
+
+  /* Barre de synthèse + footer d'actions — même schéma que .evalfoot
+     (evaluation.html) : fond --surface-2, bordure haute --line. */
+  .kpi-summary { margin: 4px 0 16px; }
+  .kpi-summary .bar { height: 7px; }
+  .kpi-summary .bar > i { background: var(--ink); }
+  .kpi-footer {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    padding: 16px 20px; background: var(--surface-2); border-top: 1px solid var(--line);
+  }
+  .kpi-footer__meta { font-size: 13px; color: var(--ink-soft); font-weight: 500; }
+  .kpi-footer__actions { display: flex; gap: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Espace Manager</div>
+    <a class="navitem is-active" href="equipe.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
+      <span class="navlabel">Mon Équipe Directe</span>
+    </a>
+    <a class="navitem" href="../partages/9box.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="16" y="16" width="144" height="144"/><rect x="184" y="16" width="144" height="144"/><rect x="352" y="16" width="144" height="144"/><rect x="16" y="184" width="144" height="144"/><rect x="184" y="184" width="144" height="144"/><rect x="352" y="184" width="144" height="144"/><rect x="16" y="352" width="144" height="144"/><rect x="184" y="352" width="144" height="144"/><rect x="352" y="352" width="144" height="144"/></svg>
+      <span class="navlabel">Matrice 9-Box</span>
+    </a>
+    <a class="navitem" href="rapports.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="32" y="256" width="96" height="224"/><rect x="208" y="160" width="96" height="320"/><rect x="384" y="64" width="96" height="416"/></svg>
+      <span class="navlabel">Rapports</span>
+    </a>
+    <a class="navitem" href="competences-equipe.html">
+      <svg viewBox="0 0 576 512" fill="currentColor"><path d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"/></svg>
+      <span class="navlabel">Compétences</span>
+    </a>
+    <a class="navitem" href="inbox.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M96 64C60.7 64 32 92.7 32 128l0 256c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64L96 64zM64 128c0-17.7 14.3-32 32-32l320 0c17.7 0 32 14.3 32 32l0 96-96 0c-8.8 0-16 5.9-18.3 14.4C325 264.6 302 288 256 288s-69-23.4-77.7-49.6C176 229.9 168.8 224 160 224l-96 0 0-96zm0 128 82.7 0c14.3 33.5 51.3 64 109.3 64s95-30.5 109.3-64L448 256l0 128c0 17.7-14.3 32-32 32L96 416c-17.7 0-32-14.3-32-32l0-128z"/></svg>
+      <span class="navlabel">Inbox &amp; Approbations</span>
+    </a>
+    <a class="navitem" href="arbitrage-n2.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M384 32l128 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L398.4 96c-5.2 25.8-22.9 47.1-46.4 57.3L352 448l160 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-192 0-192 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l160 0 0-294.7c-23.5-10.3-41.2-31.6-46.4-57.3L128 96c-17.7 0-32-14.3-32-32s14.3-32 32-32l128 0c14.6-19.4 37.8-32 64-32s49.4 12.6 64 32zm55.6 288l144.9 0L512 214.3 439.6 320zM512 384c-62.9 0-115.2-34-126.9-79.1c-3.5-13.5 4.2-27.2 15.9-34.7l108.4-158.4c9.8-14.3 30.6-14.3 40.4 0L659.6 270.2c11.6 7.5 19.4 21.2 15.9 34.7C627.2 350 574.9 384 512 384zM126.9 320c-62.9 0-115.2-34-126.9-79.1c-3.5-13.5 4.2-27.2 15.9-34.7L124.3 47.9c9.8-14.3 30.6-14.3 40.4 0L273.1 206.2c11.6 7.5 19.4 21.2 15.9 34.7C277.2 286 224.9 320 162 320l-35.1 0z"/></svg>
+      <span class="navlabel">Arbitrage N+2</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="profil.html" title="Voir mon profil">
+        <div class="avatar">MT</div>
+        <div class="who"><b>Mamadou Traoré</b><small>MANAGER</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Révision &amp; Validation des KPIs</h1>
+        <p>Anzoumana Diakité · Matricule 10057 · Campagne 2026</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <span class="pill pill--closed">Accès Confidentiel</span>
+      <button class="iconbtn js-notif"><span class="dot"></span>
+        <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224 0c-17.7 0-32 14.3-32 32l0 19.2C119 66 64 130.6 64 208l0 18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416l384 0c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8l0-18.8c0-77.4-55-142-128-156.8L256 32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3l-64 0-64 0c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"/></svg>
+      </button>
+      <a class="avatar-link" href="profil.html" title="Mon profil"><div class="avatar avatar--sm">MT</div></a>
+    </header>
+
+    <div class="content">
+
+      <!-- Fil d'Ariane — le 1er maillon fait aussi office de lien "← Retour" vers equipe.html. -->
+      <nav class="breadcrumb">
+        <a href="equipe.html">← Mon Équipe</a>
+        <span class="sep">›</span>
+        <span class="is-current">Réviser les KPIs — Anzoumana Diakité</span>
+      </nav>
+
+      <!-- Bandeau de section — accent ambre contextuel (cf. note de style ci-dessus). -->
+      <div class="kpi-context">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <p>
+          Vous révisez les <strong class="amber-count">3 objectifs</strong> soumis par
+          <strong>Anzoumana Diakité</strong>. Vous pouvez modifier les champs avant de
+          valider chaque objectif individuellement — l'employé pourra ensuite procéder
+          à son auto-évaluation.
+        </p>
+      </div>
+
+      <!-- Cartes objectif éditables -->
+      <div class="kpicards">
+
+        <!-- Objectif 1 — déjà validé (illustre l'état "validé") -->
+        <section class="kpicard is-validated">
+          <div class="kpicard__head">
+            <span class="kpicard__label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>
+              Objectif 1 <span class="kpicard__done">· Validé</span>
+            </span>
+            <button class="btn btn--on-dark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              Annuler
+            </button>
+          </div>
+          <div class="kpicard__grid">
+            <div class="field span2">
+              <label>Nom de l'objectif</label>
+              <input class="input is-locked" value="Réduire les temps d'arrêt machine" readonly>
+            </div>
+            <div class="field span2">
+              <label>Description de l'objectif</label>
+              <textarea class="textarea is-locked" readonly>Diminuer la fréquence et la durée des arrêts non planifiés sur la ligne de production, par une maintenance préventive rigoureuse et une remontée rapide des pannes.</textarea>
+            </div>
+            <div class="field">
+              <label>Critères de mesure (KPI)</label>
+              <textarea class="textarea is-locked" readonly>% de disponibilité ligne</textarea>
+            </div>
+            <div class="kpicard__stack">
+              <div class="field">
+                <label>Délai (Échéance)</label>
+                <input class="input is-locked" type="date" value="2026-12-31" readonly>
+              </div>
+              <div class="field">
+                <label>Poids %</label>
+                <div class="kpicard__weight">
+                  <input class="input is-locked" type="number" min="0" max="100" value="40" readonly>
+                  <span class="pct">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Objectif 2 — à valider -->
+        <section class="kpicard">
+          <div class="kpicard__head">
+            <span class="kpicard__label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M8.5 12l2.3 2.3L15.5 9.5"/></svg>
+              Objectif 2
+            </span>
+            <button class="btn btn--primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>
+              Valider
+            </button>
+          </div>
+          <div class="kpicard__grid">
+            <div class="field span2">
+              <label>Nom de l'objectif</label>
+              <input class="input" value="Respecter les procédures HSE">
+            </div>
+            <div class="field span2">
+              <label>Description de l'objectif</label>
+              <textarea class="textarea">Appliquer strictement les consignes de sécurité, port des EPI et procédures de consignation sur l'ensemble du poste de travail.</textarea>
+            </div>
+            <div class="field">
+              <label>Critères de mesure (KPI)</label>
+              <textarea class="textarea">Zéro incident enregistré</textarea>
+            </div>
+            <div class="kpicard__stack">
+              <div class="field">
+                <label>Délai (Échéance)</label>
+                <input class="input" type="date" value="2026-12-31">
+              </div>
+              <div class="field">
+                <label>Poids %</label>
+                <div class="kpicard__weight">
+                  <input class="input" type="number" min="0" max="100" value="35">
+                  <span class="pct">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Objectif 3 — à valider -->
+        <section class="kpicard">
+          <div class="kpicard__head">
+            <span class="kpicard__label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M8.5 12l2.3 2.3L15.5 9.5"/></svg>
+              Objectif 3
+            </span>
+            <button class="btn btn--primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>
+              Valider
+            </button>
+          </div>
+          <div class="kpicard__grid">
+            <div class="field span2">
+              <label>Nom de l'objectif</label>
+              <input class="input" value="Améliorer la cadence de production">
+            </div>
+            <div class="field span2">
+              <label>Description de l'objectif</label>
+              <textarea class="textarea">Optimiser les réglages de la ligne et réduire les micro-arrêts pour augmenter le volume produit par équipe.</textarea>
+            </div>
+            <div class="field">
+              <label>Critères de mesure (KPI)</label>
+              <textarea class="textarea">Tonnes/équipe</textarea>
+            </div>
+            <div class="kpicard__stack">
+              <div class="field">
+                <label>Délai (Échéance)</label>
+                <input class="input" type="date" value="2026-12-31">
+              </div>
+              <div class="field">
+                <label>Poids %</label>
+                <div class="kpicard__weight">
+                  <input class="input" type="number" min="0" max="100" value="25">
+                  <span class="pct">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Barre de synthèse -->
+      <div class="kpi-summary">
+        <div class="bar"><i style="width:33%"></i></div>
+      </div>
+
+      <!-- Footer : synthèse chiffrée + actions -->
+      <section class="panel" style="overflow:hidden;margin:0">
+        <div class="kpi-footer">
+          <div class="kpi-footer__meta">
+            <b class="num" style="color:var(--ink)">1/3</b> objectifs validés
+            &nbsp;·&nbsp;
+            Poids total : <b class="num" style="color:var(--ink)">100%</b>
+          </div>
+          <div class="kpi-footer__actions">
+            <a href="equipe.html" class="btn btn--ghost">Annuler</a>
+            <button class="btn btn--primary" disabled style="opacity:.45;pointer-events:none" title="Validez les 3 objectifs pour activer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Valider &amp; Notifier l'Employé
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+</body>
+</html>

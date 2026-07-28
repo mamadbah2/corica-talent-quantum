@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Matrice 9-Box</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  /* Mécanique de coque reprise telle quelle du gabarit manager/equipe.html —
+     ces classes ne sont pas définies dans assets/app.css, donc dupliquées localement ici. */
+  .rail__logout {
+    margin-left: auto; width: 30px; height: 30px; flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rail-2); color: var(--rail-faint);
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+
+  .avatar-link { display: inline-flex; }
+
+  /* ================================================================
+     Onglets (Nouvelle Évaluation / Dashboard 9-Box / Historique)
+     ----------------------------------------------------------------
+     Pattern absent d'app.css (aucun écran de maquette n'a encore de
+     navigation par onglets horizontaux) → étendu localement ici.
+     Convention réutilisée : soulignement 3px + libellé qui passe en
+     orange à l'état actif, à l'identique de .step.is-current dans
+     app.css (l'orange marque l'état "sélectionné/actif", jamais une
+     donnée) — cohérent avec DESIGN LOCK. ================================================================ */
+  .nbx-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+  .nbx-tabs button {
+    display: flex; align-items: center; gap: 8px;
+    padding: 14px 22px; font-size: 13.5px; font-weight: 700; font-family: inherit;
+    color: var(--ink-faint); background: none; border: none; cursor: pointer;
+    border-bottom: 3px solid transparent; margin-bottom: -1px;
+    transition: color 140ms ease, border-color 140ms ease;
+  }
+  .nbx-tabs button svg { width: 16px; height: 16px; opacity: 0.85; }
+  .nbx-tabs button:hover { color: var(--ink); }
+  .nbx-tabs button.is-active { color: var(--corica-orange); border-bottom-color: var(--corica-orange); }
+  .nbx-tabpanel { display: none; }
+  .nbx-tabpanel.is-active { display: block; }
+
+  /* ================================================================
+     Onglet 1 — Nouvelle Évaluation
+     ================================================================ */
+  .nbx-formrow { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 20px; }
+
+  /* En-tête de groupe de questions (Agilité / Aspiration / Motivation).
+     Puce neutre (pas orange) : c'est une catégorisation de contenu,
+     pas une action — cf. convention .chipfilter (sélection = encre). */
+  .nbx-qgroup__title {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--ink-soft); margin: 26px 0 14px;
+  }
+  .nbx-qgroup__title:first-child { margin-top: 4px; }
+  .nbx-qgroup__title i { width: 7px; height: 7px; background: var(--ink-soft); flex: none; }
+  .nbx-qgroup__title span.n { color: var(--ink-faint); font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+  .nbx-qcard { border: 1px solid var(--line); padding: 16px 18px; margin-bottom: 10px; display: flex; gap: 14px; transition: border-color 140ms ease; }
+  .nbx-qcard:hover { border-color: var(--corica-orange); }
+  .nbx-qcard__body { flex: 1; min-width: 0; }
+  .nbx-qcard__text { font-size: 13.5px; font-weight: 700; color: var(--ink); line-height: 1.5; margin: 0 0 14px; }
+  /* .rating (app.css) attend des libellés courts en pastille — réutilisé tel quel
+     pour Faible/Passable/Bon/Excellent, avec délégation de clic déjà fournie par
+     app.js ([data-rating] → toggle .is-on). */
+
+  .nbx-progress-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .nbx-progress-head .n { font-size: 13px; font-weight: 800; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  /* .bar / .bar>i (app.css) réutilisés tels quels pour la barre de progression. */
+
+  /* ================================================================
+     Onglet 2 — Dashboard 9-Box
+     ================================================================ */
+  .nbx-filters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; padding-bottom: 20px; }
+  .nbx-filters .field { margin-bottom: 0; }
+
+  .nbx-matrix { display: flex; gap: 20px; align-items: stretch; }
+
+  /* Cadre matrice : reprend .ninebox/.nb-yaxis/.nb-grid/.nb-xaxis/.nb-cell/.nb-l1..4
+     déjà définis dans app.css (échelle neutre séquentielle) — étendu ici en version
+     "pleine page" (pistes plus larges, sous-échelons HIGH/AVERAGE/LOW ajoutés de
+     part et d'autre, absents du petit widget d'origine). */
+  .nbx-gridwrap { flex: 1; display: flex; flex-direction: column; border: 1px solid var(--line); background: var(--surface); min-height: 480px; }
+  .nbx-gridrow { display: flex; flex: 1; }
+  .nbx-yaxis {
+    width: 60px; flex: none; background: var(--ink); color: var(--surface);
+    display: flex; flex-direction: column; align-items: center; padding: 20px 0 16px; position: relative;
+  }
+  .nbx-yaxis__title {
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.7;
+  }
+  .nbx-yaxis__levels { flex: 1; display: flex; flex-direction: column; justify-content: space-between; margin-top: 18px; }
+  .nbx-yaxis__levels span { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.9; }
+
+  .nbx-grid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 1px; background: var(--line); }
+  .nbx-cell {
+    /* .nb-cell + .nb-l1..4 fournissent fond/bordure/couleur de libellé (échelle neutre) ;
+       les règles ci-dessous ajoutent seulement centrage, compteur/% et état sélectionné. */
+    align-items: center; justify-content: center; text-align: center; gap: 8px;
+    cursor: pointer; min-height: 0; border-radius: 0; position: relative;
+    box-shadow: inset 0 0 0 0 transparent; transition: box-shadow 140ms ease;
+  }
+  .nbx-cell:hover { box-shadow: inset 0 0 0 2px var(--ink-faint); }
+  .nbx-cell.is-selected { box-shadow: inset 0 0 0 2px var(--ink); z-index: 1; }
+  .nbx-cell .nb-label { font-size: 10.5px; }
+  .nbx-cell__count { font-size: 27px; font-weight: 800; color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums; }
+  .nbx-cell__pct { font-size: 11px; font-weight: 600; color: var(--ink-soft); }
+
+  .nbx-xrow { display: flex; }
+  .nbx-xspacer { width: 60px; flex: none; background: var(--rail-2); }
+  .nbx-xaxis { flex: 1; background: var(--surface-2); border-top: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 8px 0 10px; }
+  .nbx-xaxis__title { font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .nbx-xaxis__levels { display: flex; width: 100%; justify-content: space-around; }
+  .nbx-xaxis__levels span { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); }
+
+  /* Panneau latéral détail (liste des talents de la case sélectionnée) */
+  .nbx-panel { width: 320px; flex: none; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; min-height: 480px; }
+  .nbx-panel__head { padding: 15px 18px; background: var(--ink); color: var(--surface); display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .nbx-panel__head-t { display: flex; align-items: center; gap: 9px; }
+  .nbx-panel__head-t i { width: 10px; height: 10px; flex: none; }
+  .nbx-panel__head h4 { font-size: 13.5px; font-weight: 700; }
+  .nbx-panel__head p { font-size: 11.5px; opacity: 0.7; margin: 4px 0 0; }
+  .nbx-panel__head button { background: none; border: none; color: rgba(255,255,255,0.55); cursor: pointer; padding: 2px; }
+  .nbx-panel__head button:hover { color: #fff; }
+  .nbx-panel__head button svg { width: 15px; height: 15px; }
+  .nbx-panel__sub { padding: 13px 18px; font-size: 12.5px; font-weight: 700; color: var(--ink); border-bottom: 1px solid var(--line-soft); }
+  .nbx-panel__body { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 9px; }
+  .nbx-panel__empty { font-size: 12px; color: var(--ink-faint); text-align: center; padding: 44px 16px; border: 1px dashed var(--line); line-height: 1.6; }
+  .nbx-emp { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid var(--line); }
+  .nbx-emp .avatar { width: 30px; height: 30px; font-size: 11px; }
+  .nbx-emp__t { min-width: 0; }
+  .nbx-emp__t b { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nbx-emp__t small { display: block; font-size: 11px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ================================================================
+     Onglet 3 — Historique
+     ================================================================ */
+  .nbx-hist { display: flex; flex-direction: column; gap: 10px; max-width: 880px; }
+  .nbx-histcard { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 18px; border: 1px solid var(--line); background: var(--surface); }
+  .nbx-histcard__id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .nbx-histcard__id b { display: block; font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .nbx-histcard__id small { display: block; font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+  .nbx-histcard__meta { display: flex; align-items: center; gap: 26px; flex: none; }
+  .nbx-histcard__date { text-align: right; }
+  .nbx-histcard__date b { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .nbx-histcard__date small { font-size: 11px; color: var(--ink-soft); }
+
+  /* ================================================================
+     Modale de personnalisation — s'appuie sur .modal-scrim/.modal/
+     .modal--wide/.modal__head/.modal__body/.modal__foot (déjà dans
+     app.css, cf. administration.html) ; compléments locaux ci-dessous. ================================================================ */
+  .nbx-swatches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; border: 1px solid var(--line); background: var(--surface-2); padding: 14px; }
+  .nbx-swatch { display: flex; align-items: center; gap: 9px; background: var(--surface); border: 1px solid var(--line); padding: 8px 10px; }
+  .nbx-swatch input[type="color"] { width: 22px; height: 22px; padding: 0; border: 1px solid var(--line); background: none; cursor: pointer; flex: none; }
+  .nbx-swatch span { font-size: 10.5px; font-weight: 700; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .nbx-slider { margin-bottom: 18px; }
+  .nbx-slider:last-child { margin-bottom: 0; }
+  .nbx-slider-head { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin-bottom: 8px; }
+  .nbx-slider-head b { font-variant-numeric: tabular-nums; }
+  .nbx-slider input[type="range"] { width: 100%; accent-color: var(--corica-orange); }
+  .nbx-slider--x input[type="range"] { accent-color: var(--ink-soft); }
+  .nbx-slider--y .nbx-slider-head b { color: var(--corica-orange); }
+  .nbx-slider--x .nbx-slider-head b { color: var(--ink); }
+
+  /* Bandeau "Mode Démo" : la source utilise un jaune ambre hors palette →
+     recoloré en neutre (fond surface-2, texte ink-soft) conformément au
+     DESIGN LOCK ; l'orange resterait ambigu ici (ce n'est pas une action). */
+  .nbx-notice { display: flex; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); background: var(--surface-2); font-size: 12px; color: var(--ink-soft); line-height: 1.55; margin-top: 20px; }
+  .nbx-notice svg { width: 16px; height: 16px; flex: none; color: var(--ink-faint); margin-top: 1px; }
+  .nbx-notice b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Espace Manager</div>
+    <a class="navitem" href="../manager/equipe.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
+      <span class="navlabel">Mon Équipe Directe</span>
+    </a>
+    <a class="navitem is-active" href="9box.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="16" y="16" width="144" height="144"/><rect x="184" y="16" width="144" height="144"/><rect x="352" y="16" width="144" height="144"/><rect x="16" y="184" width="144" height="144"/><rect x="184" y="184" width="144" height="144"/><rect x="352" y="184" width="144" height="144"/><rect x="16" y="352" width="144" height="144"/><rect x="184" y="352" width="144" height="144"/><rect x="352" y="352" width="144" height="144"/></svg>
+      <span class="navlabel">Matrice 9-Box</span>
+    </a>
+    <a class="navitem" href="../manager/rapports.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="32" y="256" width="96" height="224"/><rect x="208" y="160" width="96" height="320"/><rect x="384" y="64" width="96" height="416"/></svg>
+      <span class="navlabel">Rapports</span>
+    </a>
+    <a class="navitem" href="../manager/competences-equipe.html">
+      <svg viewBox="0 0 576 512" fill="currentColor"><path d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"/></svg>
+      <span class="navlabel">Compétences</span>
+    </a>
+    <a class="navitem" href="../manager/inbox.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M96 64C60.7 64 32 92.7 32 128l0 256c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64L96 64zM64 128c0-17.7 14.3-32 32-32l320 0c17.7 0 32 14.3 32 32l0 96-96 0c-8.8 0-16 5.9-18.3 14.4C325 264.6 302 288 256 288s-69-23.4-77.7-49.6C176 229.9 168.8 224 160 224l-96 0 0-96zm0 128 82.7 0c14.3 33.5 51.3 64 109.3 64s95-30.5 109.3-64L448 256l0 128c0 17.7-14.3 32-32 32L96 416c-17.7 0-32-14.3-32-32l0-128z"/></svg>
+      <span class="navlabel">Inbox &amp; Approbations</span>
+    </a>
+    <a class="navitem" href="../manager/arbitrage-n2.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M384 32l128 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L398.4 96c-5.2 25.8-22.9 47.1-46.4 57.3L352 448l160 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-192 0-192 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l160 0 0-294.7c-23.5-10.3-41.2-31.6-46.4-57.3L128 96c-17.7 0-32-14.3-32-32s14.3-32 32-32l128 0c14.6-19.4 37.8-32 64-32s49.4 12.6 64 32zm55.6 288l144.9 0L512 214.3 439.6 320zM512 384c-62.9 0-115.2-34-126.9-79.1c-3.5-13.5 4.2-27.2 15.9-34.7l108.4-158.4c9.8-14.3 30.6-14.3 40.4 0L659.6 270.2c11.6 7.5 19.4 21.2 15.9 34.7C627.2 350 574.9 384 512 384zM126.9 320c-62.9 0-115.2-34-126.9-79.1c-3.5-13.5 4.2-27.2 15.9-34.7L124.3 47.9c9.8-14.3 30.6-14.3 40.4 0L273.1 206.2c11.6 7.5 19.4 21.2 15.9 34.7C277.2 286 224.9 320 162 320l-35.1 0z"/></svg>
+      <span class="navlabel">Arbitrage N+2</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="../manager/profil.html" title="Voir mon profil">
+        <div class="avatar">MT</div>
+        <div class="who"><b>Mamadou Traoré</b><small>MANAGER</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Matrice 9-Box</h1>
+        <p>Cartographie Performance × Potentiel · Campagne 2026</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <span class="pill pill--closed">Accès Confidentiel</span>
+      <button class="iconbtn js-notif"><span class="dot"></span>
+        <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224 0c-17.7 0-32 14.3-32 32l0 19.2C119 66 64 130.6 64 208l0 18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416l384 0c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8l0-18.8c0-77.4-55-142-128-156.8L256 32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3l-64 0-64 0c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"/></svg>
+      </button>
+      <a class="avatar-link" href="../manager/profil.html" title="Mon profil"><div class="avatar avatar--sm">MT</div></a>
+    </header>
+
+    <div class="content">
+      <p class="muted" style="font-size:12.5px;margin:0 0 4px;display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 448 512" width="12" height="12" fill="var(--ink-faint)"><path d="M224 0c-17.7 0-32 14.3-32 32l0 19.2C119 66 64 130.6 64 208l0 18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416l384 0c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8l0-18.8c0-77.4-55-142-128-156.8L256 32c0-17.7-14.3-32-32-32z"/></svg>
+        Seuls l'évaluateur N+1, N+2 et le Responsable RH concerné ont accès à cet espace.
+      </p>
+
+      <!-- ONGLETS -->
+      <nav class="nbx-tabs">
+        <button type="button" data-tab="eval" class="is-active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+          Nouvelle Évaluation
+        </button>
+        <button type="button" data-tab="dash">
+          <svg viewBox="0 0 512 512" fill="currentColor"><rect x="16" y="16" width="144" height="144"/><rect x="184" y="16" width="144" height="144"/><rect x="352" y="16" width="144" height="144"/><rect x="16" y="184" width="144" height="144"/><rect x="184" y="184" width="144" height="144"/><rect x="352" y="184" width="144" height="144"/><rect x="16" y="352" width="144" height="144"/><rect x="184" y="352" width="144" height="144"/><rect x="352" y="352" width="144" height="144"/></svg>
+          Dashboard 9-Box
+        </button>
+        <button type="button" data-tab="hist">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          Historique (<span id="nbx-hist-count">5</span>)
+        </button>
+      </nav>
+
+      <!-- ============================================================
+           ONGLET 1 — NOUVELLE ÉVALUATION
+           ============================================================ -->
+      <section class="nbx-tabpanel is-active" data-panel="eval">
+        <section class="panel" style="margin-bottom:20px">
+          <div class="panel__head"><h2>1. Informations de l'employé et Performance</h2></div>
+          <div class="panel__body">
+            <div class="nbx-formrow">
+              <div class="field" style="margin-bottom:0">
+                <label>Sélectionner un employé *</label>
+                <select class="select" id="nbx-emp-select">
+                  <option value="">-- Choisir un employé --</option>
+                  <option value="EMP-A">Anzoumana Diakite - Technicien Junior</option>
+                  <option value="EMP-B">Issiaka Konate - Technicien</option>
+                  <option value="EMP-C">Siaka Djakite - Agent de Maîtrise</option>
+                  <option value="EMP-D">Fiacre Tossou - Technicien Senior</option>
+                  <option value="EMP-E">Arouna Sankara - Superviseur</option>
+                  <option value="EMP-F">Kamoko Kone - Opérateur</option>
+                  <option value="EMP-G">Issouf Kone - Technicien</option>
+                  <option value="EMP-H">Zie Kone - Agent HSE</option>
+                  <option value="EMP-I">Dognimin Coulibaly - Technicien Maintenance</option>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label>Note Performance Année N (Moyenne 1 à 4) *</label>
+                <input class="input" id="nbx-perf-n" type="text" inputmode="decimal" placeholder="Ex: 3.5">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label>Note Performance Année N-1 (optionnel)</label>
+                <input class="input" type="text" inputmode="decimal" placeholder="Ex: 3.2">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head" style="justify-content:space-between">
+            <h2>2. Évaluation du Potentiel (16 critères)</h2>
+          </div>
+          <div class="panel__body">
+            <div class="nbx-progress-head">
+              <span class="muted" style="font-size:12px">Progression de l'évaluation</span>
+              <span class="n"><span id="nbx-progress-n">0</span>/16</span>
+            </div>
+            <div class="bar" style="margin-bottom:8px"><i id="nbx-progress-bar" style="width:0%"></i></div>
+
+            <!-- Agilité (Q1-7) -->
+            <div class="nbx-qgroup__title"><i></i> Agilité <span class="n">(7 questions)</span></div>
+
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">1. Cette personne fait preuve d'initiative et démontre des performances qui vont au-delà de ce qui est généralement attendu dans son travail.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">2. Cette personne démontre une capacité à communiquer et interagir aisément avec des personnes à des niveaux supérieurs et dans différents domaines de l'entreprise.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">3. Cette personne performe face à de nouveaux défis et prend des risques calculés pour obtenir des résultats.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">4. Cette personne s'adapte rapidement aux changements et influence positivement les autres en période de transition.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">5. Cette personne développe continuellement de nouvelles compétences et cherche proactivement du feedback.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">6. Cette personne résout des problèmes complexes de manière autonome et apporte des solutions innovantes.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">7. Cette personne fait preuve de leadership émotionnel et gère le stress de manière exemplaire.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+
+            <!-- Aspiration (Q8-11) -->
+            <div class="nbx-qgroup__title"><i></i> Aspiration <span class="n">(4 questions)</span></div>
+
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">8. Cette personne démontre un alignement fort avec la culture et les valeurs de l'entreprise.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">9. Cette personne contribue activement au développement et au mentorat des autres employés.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">10. Cette personne a une vision claire des objectifs globaux et aligne son travail sur la stratégie globale.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">11. Cette personne accepte de prendre des responsabilités allant au-delà de sa description de poste initiale.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+
+            <!-- Motivation & Engagement (Q12-16) -->
+            <div class="nbx-qgroup__title"><i></i> Motivation &amp; Engagement <span class="n">(5 questions)</span></div>
+
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">12. Cette personne maintient un niveau constant d'excellence même sans supervision directe.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">13. Cette personne établit et maintient des relations stratégiques avec des partenaires ou clients externes.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">14. Cette personne gère activement les priorités contradictoires et délivre dans les délais.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">15. Cette personne est force de proposition pour l'amélioration continue des processus existants.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+            <div class="nbx-qcard">
+              <div class="nbx-qcard__body">
+                <p class="nbx-qcard__text">16. Cette personne a l'ambition d'occuper un rôle de direction ou de leadership stratégique.</p>
+                <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
+              </div>
+            </div>
+
+            <div style="padding-top:20px;margin-top:6px;border-top:1px solid var(--line);display:flex;justify-content:flex-end">
+              <button class="btn btn--primary" id="nbx-submit" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                Sauvegarder l'évaluation
+              </button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ============================================================
+           ONGLET 2 — DASHBOARD 9-BOX
+           ============================================================ -->
+      <section class="nbx-tabpanel" data-panel="dash">
+        <section class="panel" style="margin-bottom:20px">
+          <div class="panel__head" style="justify-content:space-between">
+            <div>
+              <h2>Dashboard 9-Box</h2>
+              <span class="sub">23 collaborateurs évalués · Campagne 2026</span>
+            </div>
+            <button class="btn btn--primary" data-open-modal>
+              <svg viewBox="0 0 512 512" fill="currentColor"><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg>
+              Personnaliser
+            </button>
+          </div>
+          <div class="panel__body" style="padding-bottom:20px">
+            <div class="nbx-filters">
+              <div class="field">
+                <label>Department</label>
+                <select class="select" id="f-department"><option value="ALL">ALL</option></select>
+              </div>
+              <div class="field">
+                <label>Position</label>
+                <select class="select" id="f-position"><option value="ALL">ALL</option></select>
+              </div>
+              <div class="field">
+                <label>Job Grade</label>
+                <select class="select" id="f-jobGrade"><option value="ALL">ALL</option></select>
+              </div>
+              <div class="field">
+                <label>Seniority</label>
+                <select class="select" id="f-seniority"><option value="ALL">ALL</option></select>
+              </div>
+              <div class="field">
+                <label>Site</label>
+                <select class="select" id="f-site"><option value="ALL">ALL</option></select>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="nbx-matrix">
+          <div class="nbx-gridwrap">
+            <div class="nbx-gridrow">
+              <div class="nbx-yaxis">
+                <span class="nbx-yaxis__title">Performance</span>
+                <div class="nbx-yaxis__levels"><span>High</span><span>Average</span><span>Low</span></div>
+              </div>
+              <div class="nbx-grid" id="nbx-grid">
+                <!-- Ordre = MATRIX_CELLS (data.ts) : lignes = Performance (HIGH→LOW), colonnes = Potentiel (LOW→AVG→HIGH) -->
+                <div class="nb-cell nbx-cell nb-l2" data-cat="SOLID PERFORMER">
+                  <span class="nb-label">Solid Performer</span>
+                  <span class="nbx-cell__count" data-count>0</span>
+                  <span class="nbx-cell__pct" data-pct>0%</span>
+                </div>
+                <div class="nb-cell nbx-cell nb-l3" data-cat="HIGH PERFORMER">
+                  <span class="nb-label">High Performer</span>
+                  <span class="nbx-cell__count" data-count>0</span>
+                  <span class="nbx-cell__pct" data-pct>0%</span>
+                </div>
+                <div class="nb-cell nbx-cell nb-l4" data-cat="STAR">
+                  <span class="nb-label">Star</span>
+                  <span class="nbx-cell__count" data-count>0</span>
+                  <span class="nbx-cell__pct" data-pct>0%</span>
+                </div>
+                <div class="nb-cell nbx-cell nb-l2" data-cat="AVERAGE PERFORMER">
+                  <span class="nb-label">Average Performer</span>
+                  <span class="nbx-cell__count" data-count>0</span>
+                  <span class="nbx-cell__pct" data-pct>0%</span>
+                </div>
+                <div class="nb-cell nbx-cell nb-l3" data-cat="CORE PLAYER">
+                  <span class="nb-label">Core Player</span>
+                  <span class="nbx-cell__count" data-count>0</span>
+                  <span class="nbx-cell__pct" data-pct>0%</span>
+                </div>
+                <div class="nb-cell nbx-cell nb-l3" data-cat="HIGH POTENTIAL">
+                  <span class="nb-label">High Potential</span>
+                  <span class="nbx-cell__count" data-count>0</span>
+                  <span class="nbx-cell__pct" data-pct>0%</span>
+                </div>
+                <div class="nb-cell nbx-cell nb-l1" data-cat="RISK">
+                  <span class="nb-label">Risk</span>
+                  <span class="nbx-cell__count" data-count>0</span>
+                  <span class="nbx-cell__pct" data-pct>0%</span>
+                </div>
+                <div class="nb-cell nbx-cell nb-l1" data-cat="INCONSISTENT PLAYER">
+                  <span class="nb-label">Inconsistent Player</span>
+                  <span class="nbx-cell__count" data-count>0</span>
+                  <span class="nbx-cell__pct" data-pct>0%</span>
+                </div>
+                <div class="nb-cell nbx-cell nb-l2" data-cat="POTENTIAL GEM">
+                  <span class="nb-label">Potential Gem</span>
+                  <span class="nbx-cell__count" data-count>0</span>
+                  <span class="nbx-cell__pct" data-pct>0%</span>
+                </div>
+              </div>
+            </div>
+            <div class="nbx-xrow">
+              <div class="nbx-xspacer"></div>
+              <div class="nbx-xaxis">
+                <span class="nbx-xaxis__title">Potentiel</span>
+                <div class="nbx-xaxis__levels"><span>Low</span><span>Average</span><span>High</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nbx-panel">
+            <div class="nbx-panel__head" id="nbx-panel-head">
+              <div class="nbx-panel__head-t">
+                <div>
+                  <h4 id="nbx-panel-title">Grouped by total score</h4>
+                  <p id="nbx-panel-sub">Sélectionnez une case pour voir le détail.</p>
+                </div>
+              </div>
+              <button type="button" id="nbx-panel-clear" style="display:none" aria-label="Fermer">
+                <svg viewBox="0 0 384 512" fill="currentColor"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
+              </button>
+            </div>
+            <div class="nbx-panel__body" id="nbx-panel-body">
+              <p class="nbx-panel__empty">Cliquez sur une case de la matrice pour afficher la liste des talents correspondants.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           ONGLET 3 — HISTORIQUE (MOCK_HISTORY, verbatim)
+           ============================================================ -->
+      <section class="nbx-tabpanel" data-panel="hist">
+        <div class="nbx-hist">
+          <div class="nbx-histcard">
+            <div class="nbx-histcard__id">
+              <div class="avatar avatar--sm">AD</div>
+              <div><b>Anzoumana Diakite</b><small>Sissengué | Opérateur Dump Truck</small></div>
+            </div>
+            <div class="nbx-histcard__meta">
+              <span class="tag tag--core">CORE PLAYER</span>
+              <div class="nbx-histcard__date"><b>21/01/2026</b><small>par Ibouraima Djibo</small></div>
+            </div>
+          </div>
+          <div class="nbx-histcard">
+            <div class="nbx-histcard__id">
+              <div class="avatar avatar--sm">KO</div>
+              <div><b>Karim Ouédraogo</b><small>Sissengué | Opérateur Junior</small></div>
+            </div>
+            <div class="nbx-histcard__meta">
+              <span class="tag tag--risk">RISK</span>
+              <div class="nbx-histcard__date"><b>07/01/2026</b><small>par Ibouraima Djibo</small></div>
+            </div>
+          </div>
+          <div class="nbx-histcard">
+            <div class="nbx-histcard__id">
+              <div class="avatar avatar--sm">SK</div>
+              <div><b>Salif Koné</b><small>Sissengué | Technicien Senior</small></div>
+            </div>
+            <div class="nbx-histcard__meta">
+              <span class="tag tag--star">STAR</span>
+              <div class="nbx-histcard__date"><b>07/01/2026</b><small>par Ibouraima Djibo</small></div>
+            </div>
+          </div>
+          <div class="nbx-histcard">
+            <div class="nbx-histcard__id">
+              <div class="avatar avatar--sm">AB</div>
+              <div><b>Aïcha Bamba</b><small>Sissengué | Technicienne</small></div>
+            </div>
+            <div class="nbx-histcard__meta">
+              <span class="tag tag--core">HIGH PERFORMER</span>
+              <div class="nbx-histcard__date"><b>07/01/2026</b><small>par Ibouraima Djibo</small></div>
+            </div>
+          </div>
+          <div class="nbx-histcard">
+            <div class="nbx-histcard__id">
+              <div class="avatar avatar--sm">MK</div>
+              <div><b>Marie Koné</b><small>Sissengué | Technicienne</small></div>
+            </div>
+            <div class="nbx-histcard__meta">
+              <span class="tag tag--star">STAR</span>
+              <div class="nbx-histcard__date"><b>07/01/2026</b><small>par Ibouraima Djibo</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- MODALE : Personnalisation de la Matrice -->
+<div class="modal-scrim" id="modal-scrim">
+  <div class="modal modal--wide">
+    <div class="modal__head">
+      <button class="modal__close" aria-label="Fermer"><svg viewBox="0 0 384 512" fill="currentColor"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg></button>
+      <h2>Personnalisation de la Matrice</h2>
+      <p>Couleurs des 9 cases et pondération de l'algorithme</p>
+    </div>
+    <div class="modal__body">
+      <label style="font-size:12.5px;font-weight:700;color:var(--ink);display:block;margin-bottom:10px">Thème &amp; couleurs des 9 cases</label>
+      <div class="nbx-swatches">
+        <div class="nbx-swatch"><input type="color" value="#f9f7f5"><span>Solid Performer</span></div>
+        <div class="nbx-swatch"><input type="color" value="#e4dcd6"><span>High Performer</span></div>
+        <div class="nbx-swatch"><input type="color" value="#d8cdc5"><span>Star</span></div>
+        <div class="nbx-swatch"><input type="color" value="#f9f7f5"><span>Average Performer</span></div>
+        <div class="nbx-swatch"><input type="color" value="#e4dcd6"><span>Core Player</span></div>
+        <div class="nbx-swatch"><input type="color" value="#e4dcd6"><span>High Potential</span></div>
+        <div class="nbx-swatch"><input type="color" value="#fcfbfa"><span>Risk</span></div>
+        <div class="nbx-swatch"><input type="color" value="#fcfbfa"><span>Inconsistent Player</span></div>
+        <div class="nbx-swatch"><input type="color" value="#f9f7f5"><span>Potential Gem</span></div>
+      </div>
+
+      <label style="font-size:12.5px;font-weight:700;color:var(--ink);display:block;margin:22px 0 10px">Pondération algorithmique (X vs Y)</label>
+      <div style="border:1px solid var(--line);padding:18px">
+        <div class="nbx-slider nbx-slider--y">
+          <div class="nbx-slider-head"><span>Axe Y (Performance M-BO)</span><b id="nbx-w-y">50%</b></div>
+          <input type="range" min="0" max="100" value="50" id="nbx-range-y">
+        </div>
+        <div class="nbx-slider nbx-slider--x">
+          <div class="nbx-slider-head"><span>Axe X (Potentiel - 16 Critères)</span><b id="nbx-w-x">50%</b></div>
+          <input type="range" min="0" max="100" value="50" id="nbx-range-x">
+        </div>
+      </div>
+
+      <div class="nbx-notice">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336l24 0 0-64-24 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 88 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
+        <span><b>Mode Démo :</b> les modifications effectuées ici sont visuelles et ne seront pas sauvegardées définitivement. L'interface se réinitialisera au prochain rechargement.</span>
+      </div>
+    </div>
+    <div class="modal__foot">
+      <button class="btn btn--ghost modal__close">Annuler</button>
+      <button class="btn btn--primary modal__close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Appliquer les Nouveaux Paramètres
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Onglets ---------- */
+  var tabBtns = document.querySelectorAll(".nbx-tabs button[data-tab]");
+  var panels = document.querySelectorAll(".nbx-tabpanel[data-panel]");
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      tabBtns.forEach(function (b) { b.classList.remove("is-active"); });
+      panels.forEach(function (p) { p.classList.remove("is-active"); });
+      btn.classList.add("is-active");
+      document.querySelector('.nbx-tabpanel[data-panel="' + btn.dataset.tab + '"]').classList.add("is-active");
+    });
+  });
+
+  /* ---------- Onglet 1 : progression de l'évaluation du potentiel ---------- */
+  var ratingGroups = document.querySelectorAll('.nbx-tabpanel[data-panel="eval"] [data-rating]');
+  var progressN = document.getElementById("nbx-progress-n");
+  var progressBar = document.getElementById("nbx-progress-bar");
+  var submitBtn = document.getElementById("nbx-submit");
+  var empSelect = document.getElementById("nbx-emp-select");
+  var perfInput = document.getElementById("nbx-perf-n");
+
+  function updateEvalProgress() {
+    var answered = 0;
+    ratingGroups.forEach(function (g) { if (g.querySelector("button.is-on")) answered++; });
+    progressN.textContent = answered;
+    progressBar.style.width = ((answered / 16) * 100) + "%";
+    var ready = answered === 16 && empSelect.value !== "" && perfInput.value.trim() !== "";
+    submitBtn.disabled = !ready;
+  }
+  ratingGroups.forEach(function (g) { g.addEventListener("click", updateEvalProgress); });
+  empSelect.addEventListener("change", updateEvalProgress);
+  perfInput.addEventListener("input", updateEvalProgress);
+  submitBtn.addEventListener("click", function () {
+    if (submitBtn.disabled) return;
+    alert("Démo statique : l'évaluation serait enregistrée puis l'écran basculerait sur l'onglet Dashboard 9-Box.");
+  });
+
+  /* ---------- Onglet 2 : Dashboard 9-Box (23 collaborateurs, données plausibles) ---------- */
+  var EMPLOYEES = [
+    { name: "Boubacar Sanogo",      role: "Ingénieur Process",         department: "Ingénierie", position: "Cadre",             jobGrade: "L4", seniority: "5-10 ans", site: "Sissengué",       cat: "STAR" },
+    { name: "Fatoumata Coulibaly",  role: "Superviseur Production",    department: "Opérations", position: "Agent de Maîtrise", jobGrade: "L4", seniority: "5-10 ans", site: "Sissengué",       cat: "STAR" },
+    { name: "Adama Ouattara",       role: "Responsable HSE",           department: "HSE",        position: "Cadre",             jobGrade: "L5", seniority: "10+ ans",  site: "Zougnazo",        cat: "STAR" },
+    { name: "Aminata Traoré",       role: "Chef de Projet",            department: "Ingénierie", position: "Cadre",             jobGrade: "L5", seniority: "10+ ans",  site: "Abidjan (HQ)",    cat: "STAR" },
+    { name: "Seydou Bamba",         role: "Chef d'Équipe",             department: "Opérations", position: "Agent de Maîtrise", jobGrade: "L3", seniority: "3-5 ans",  site: "Sissengué",       cat: "HIGH PERFORMER" },
+    { name: "Awa Diomandé",         role: "Technicienne Senior",       department: "Maintenance",position: "Technicien",        jobGrade: "L3", seniority: "5-10 ans", site: "Zougnazo",        cat: "HIGH PERFORMER" },
+    { name: "Moussa Keita",         role: "Superviseur Logistique",    department: "Logistique", position: "Agent de Maîtrise", jobGrade: "L4", seniority: "5-10 ans", site: "Sissengué",       cat: "HIGH PERFORMER" },
+    { name: "Karim Doumbia",        role: "Contrôleur de Gestion",     department: "Finance",    position: "Cadre",             jobGrade: "L3", seniority: "3-5 ans",  site: "Abidjan (HQ)",    cat: "SOLID PERFORMER" },
+    { name: "Rokia Fofana",         role: "Chargée RH",                department: "RH",         position: "Cadre",             jobGrade: "L2", seniority: "1-3 ans",  site: "Sissengué",       cat: "SOLID PERFORMER" },
+    { name: "Yacouba Sangaré",      role: "Ingénieur Junior",          department: "Ingénierie", position: "Cadre",             jobGrade: "L2", seniority: "1-3 ans",  site: "Zougnazo",        cat: "HIGH POTENTIAL" },
+    { name: "Aïcha Bakayoko",       role: "Agent de Maîtrise",         department: "Opérations", position: "Agent de Maîtrise", jobGrade: "L2", seniority: "1-3 ans",  site: "Sissengué",       cat: "HIGH POTENTIAL" },
+    { name: "Drissa Konaté",        role: "Technicien",                department: "Maintenance",position: "Technicien",        jobGrade: "L2", seniority: "3-5 ans",  site: "Sissengué",       cat: "CORE PLAYER" },
+    { name: "Nafissatou Cissé",     role: "Agent HSE",                 department: "HSE",        position: "Technicien",        jobGrade: "L2", seniority: "3-5 ans",  site: "Zougnazo",        cat: "CORE PLAYER" },
+    { name: "Lassina Ouédraogo",    role: "Opérateur Concasseur",      department: "Opérations", position: "Employé",           jobGrade: "L2", seniority: "3-5 ans",  site: "Sissengué",       cat: "CORE PLAYER" },
+    { name: "Salimata Touré",       role: "Agent Logistique",          department: "Logistique", position: "Employé",           jobGrade: "L1", seniority: "1-3 ans",  site: "Sissengué",       cat: "CORE PLAYER" },
+    { name: "Brahima Sidibé",       role: "Technicien Instrumentation",department: "Ingénierie", position: "Technicien",        jobGrade: "L2", seniority: "3-5 ans",  site: "Zougnazo",        cat: "CORE PLAYER" },
+    { name: "Josué Kouadio",        role: "Opérateur",                 department: "Opérations", position: "Employé",           jobGrade: "L1", seniority: "1-3 ans",  site: "Sissengué",       cat: "AVERAGE PERFORMER" },
+    { name: "Mariam Cissoko",       role: "Assistante RH",             department: "RH",         position: "Employé",           jobGrade: "L1", seniority: "<1 an",   site: "Abidjan (HQ)",    cat: "AVERAGE PERFORMER" },
+    { name: "Sié Coulibaly",        role: "Aide-Technicien",           department: "Maintenance",position: "Employé",           jobGrade: "L1", seniority: "1-3 ans",  site: "Sissengué",       cat: "AVERAGE PERFORMER" },
+    { name: "Aboubacar Diarra",     role: "Stagiaire Ingénieur",       department: "Ingénierie", position: "Employé",           jobGrade: "L1", seniority: "<1 an",   site: "Sissengué",       cat: "POTENTIAL GEM" },
+    { name: "Fousseni Traoré",      role: "Opérateur",                 department: "Opérations", position: "Employé",           jobGrade: "L1", seniority: "1-3 ans",  site: "Zougnazo",        cat: "INCONSISTENT PLAYER" },
+    { name: "Djénéba Sylla",        role: "Agent Logistique",          department: "Logistique", position: "Employé",           jobGrade: "L1", seniority: "<1 an",   site: "Sissengué",       cat: "INCONSISTENT PLAYER" },
+    { name: "Yssouf Bagayoko",      role: "Aide-Technicien",           department: "Maintenance",position: "Employé",           jobGrade: "L1", seniority: "<1 an",   site: "Sissengué",       cat: "RISK" }
+  ];
+
+  var CELL_LABELS = {
+    "SOLID PERFORMER": "Solid Performer", "HIGH PERFORMER": "High Performer", "STAR": "Star",
+    "AVERAGE PERFORMER": "Average Performer", "CORE PLAYER": "Core Player", "HIGH POTENTIAL": "High Potential",
+    "RISK": "Risk", "INCONSISTENT PLAYER": "Inconsistent Player", "POTENTIAL GEM": "Potential Gem"
+  };
+
+  function initials(name) {
+    var parts = name.split(" ").filter(Boolean);
+    if (parts.length < 2) return name.slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  var filterKeys = ["department", "position", "jobGrade", "seniority", "site"];
+  var filters = { department: "ALL", position: "ALL", jobGrade: "ALL", seniority: "ALL", site: "ALL" };
+
+  filterKeys.forEach(function (key) {
+    var sel = document.getElementById("f-" + key);
+    var values = Array.from(new Set(EMPLOYEES.map(function (e) { return e[key]; }))).sort();
+    values.forEach(function (v) {
+      var opt = document.createElement("option");
+      opt.value = v; opt.textContent = v;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", function () { filters[key] = sel.value; render(); });
+  });
+
+  var selectedCategory = null;
+  var cells = document.querySelectorAll("#nbx-grid .nbx-cell");
+  var panelTitle = document.getElementById("nbx-panel-title");
+  var panelSub = document.getElementById("nbx-panel-sub");
+  var panelBody = document.getElementById("nbx-panel-body");
+  var panelClear = document.getElementById("nbx-panel-clear");
+
+  function filteredEmployees() {
+    return EMPLOYEES.filter(function (e) {
+      return filterKeys.every(function (key) { return filters[key] === "ALL" || e[key] === filters[key]; });
+    });
+  }
+
+  function render() {
+    var list = filteredEmployees();
+    var total = list.length || 1;
+    var stats = {};
+    list.forEach(function (e) { stats[e.cat] = (stats[e.cat] || 0) + 1; });
+
+    cells.forEach(function (cell) {
+      var cat = cell.dataset.cat;
+      var count = stats[cat] || 0;
+      var pct = ((count / total) * 100).toFixed(1);
+      cell.querySelector("[data-count]").textContent = count;
+      cell.querySelector("[data-pct]").textContent = pct + "%";
+      cell.classList.toggle("is-selected", selectedCategory === cat);
+    });
+
+    if (selectedCategory) {
+      var inCat = list.filter(function (e) { return e.cat === selectedCategory; });
+      panelTitle.textContent = CELL_LABELS[selectedCategory] + " (" + inCat.length + ")";
+      panelSub.textContent = "Catégorie de performance ciblée.";
+      panelClear.style.display = "";
+      if (inCat.length) {
+        panelBody.innerHTML = inCat.map(function (e) {
+          return '<div class="nbx-emp"><div class="avatar avatar--sm">' + initials(e.name) + '</div>' +
+                 '<div class="nbx-emp__t"><b>' + e.name + '</b><small>' + e.role + '</small></div></div>';
+        }).join("");
+      } else {
+        panelBody.innerHTML = '<p class="nbx-panel__empty">Aucun talent pour l\'instant dans cette case, avec ces filtres.</p>';
+      }
+    } else {
+      panelTitle.textContent = "Grouped by total score";
+      panelSub.textContent = "Sélectionnez une case pour voir le détail.";
+      panelClear.style.display = "none";
+      panelBody.innerHTML = '<p class="nbx-panel__empty">Cliquez sur une case de la matrice pour afficher la liste des talents correspondants.</p>';
+    }
+  }
+
+  cells.forEach(function (cell) {
+    cell.addEventListener("click", function () {
+      var cat = cell.dataset.cat;
+      selectedCategory = selectedCategory === cat ? null : cat;
+      render();
+    });
+  });
+  panelClear.addEventListener("click", function () { selectedCategory = null; render(); });
+
+  render();
+
+  /* ---------- Modale de personnalisation : sliders liés ---------- */
+  var rangeY = document.getElementById("nbx-range-y");
+  var rangeX = document.getElementById("nbx-range-x");
+  var wY = document.getElementById("nbx-w-y");
+  var wX = document.getElementById("nbx-w-x");
+  rangeY.addEventListener("input", function () {
+    var y = parseInt(rangeY.value, 10);
+    rangeX.value = 100 - y;
+    wY.textContent = y + "%"; wX.textContent = (100 - y) + "%";
+  });
+  rangeX.addEventListener("input", function () {
+    var x = parseInt(rangeX.value, 10);
+    rangeY.value = 100 - x;
+    wX.textContent = x + "%"; wY.textContent = (100 - x) + "%";
+  });
+})();
+</script>
+</body>
+</html>
