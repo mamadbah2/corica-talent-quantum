@@ -55,3 +55,6 @@ publicdocs/
 
 # scratch: extraction temporaire de .docx
 /ext/
+
+# superpowers: état de tooling SDD (pas un livrable projet)
+/.superpowers/
