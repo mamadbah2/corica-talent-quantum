@@ -67,6 +67,11 @@
   .nbx-qcard:hover { border-color: var(--corica-orange); }
   .nbx-qcard__body { flex: 1; min-width: 0; }
   .nbx-qcard__text { font-size: 13.5px; font-weight: 700; color: var(--ink); line-height: 1.5; margin: 0 0 14px; }
+  /* Grille 2 colonnes par groupe : évite que les cartes prennent toute la largeur
+     (boutons .rating flex:1 qui s'étiraient) et réduit ~de moitié la hauteur. */
+  .nbx-qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+  .nbx-qgrid .nbx-qcard { margin-bottom: 0; }
+  @media (max-width: 1080px) { .nbx-qgrid { grid-template-columns: 1fr; } }
   /* .rating (app.css) attend des libellés courts en pastille — réutilisé tel quel
      pour Faible/Passable/Bon/Excellent, avec délégation de clic déjà fournie par
      app.js ([data-rating] → toggle .is-on). */
@@ -316,6 +321,7 @@
             <!-- Agilité (Q1-7) -->
             <div class="nbx-qgroup__title"><i></i> Agilité <span class="n">(7 questions)</span></div>
 
+            <div class="nbx-qgrid">
             <div class="nbx-qcard">
               <div class="nbx-qcard__body">
                 <p class="nbx-qcard__text">1. Cette personne fait preuve d'initiative et démontre des performances qui vont au-delà de ce qui est généralement attendu dans son travail.</p>
@@ -359,9 +365,12 @@
               </div>
             </div>
 
+            </div>
+
             <!-- Aspiration (Q8-11) -->
             <div class="nbx-qgroup__title"><i></i> Aspiration <span class="n">(4 questions)</span></div>
 
+            <div class="nbx-qgrid">
             <div class="nbx-qcard">
               <div class="nbx-qcard__body">
                 <p class="nbx-qcard__text">8. Cette personne démontre un alignement fort avec la culture et les valeurs de l'entreprise.</p>
@@ -387,9 +396,12 @@
               </div>
             </div>
 
+            </div>
+
             <!-- Motivation & Engagement (Q12-16) -->
             <div class="nbx-qgroup__title"><i></i> Motivation &amp; Engagement <span class="n">(5 questions)</span></div>
 
+            <div class="nbx-qgrid">
             <div class="nbx-qcard">
               <div class="nbx-qcard__body">
                 <p class="nbx-qcard__text">12. Cette personne maintient un niveau constant d'excellence même sans supervision directe.</p>
@@ -419,6 +431,8 @@
                 <p class="nbx-qcard__text">16. Cette personne a l'ambition d'occuper un rôle de direction ou de leadership stratégique.</p>
                 <div class="rating" data-rating><button>Faible</button><button>Passable</button><button>Bon</button><button>Excellent</button></div>
               </div>
+            </div>
+
             </div>
 
             <div style="padding-top:20px;margin-top:6px;border-top:1px solid var(--line);display:flex;justify-content:flex-end">
