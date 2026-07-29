@@ -35,6 +35,74 @@
   .skill-bar { flex: 1; height: 8px; background: var(--line-soft); border: 1px solid var(--line); position: relative; overflow: hidden; }
   .skill-bar__fill { height: 100%; background: var(--ink-soft); }
   .skill-row__pct { flex: 0 0 32px; text-align: right; font-size: 11px; font-weight: 800; color: var(--ink-faint); }
+
+  /* ================================================================
+     DASHBOARD MANAGER — composition asymétrique (pas de grille de tuiles
+     identiques ni de "hero-metric" isolé). Tout dans la charte verrouillée :
+     données = neutres séquentiels ; orange = ACTION uniquement (chips, liens)
+     + série focale de dataviz (dernier trimestre). Tout carré, SVG/CSS inline.
+     ================================================================ */
+
+  /* --- Bandeau-registre : 1 métrique-lead (avancement) + registre de chiffres --- */
+  .dash-ledger { display: grid; grid-template-columns: minmax(300px, 1.25fr) 1.75fr; gap: 30px; align-items: center;
+    border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow-1); padding: 20px 26px; }
+  .dash-ledger__k { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); }
+  .dash-ledger__val { display: flex; align-items: baseline; gap: 4px; margin: 3px 0 11px; }
+  .dash-ledger__val b { font-size: 48px; font-weight: 800; color: var(--ink); line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .dash-ledger__val span { font-size: 19px; font-weight: 700; color: var(--ink-soft); }
+  .dash-spine { height: 9px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+  .dash-spine i { display: block; height: 100%; background: var(--ink-soft); }
+  .dash-ledger__stats { display: flex; justify-content: flex-end; }
+  .dash-ledger__stats > div { padding: 2px 30px; border-left: 1px solid var(--line); }
+  .dash-ledger__stats > div:first-child { border-left: none; padding-left: 0; }
+  .dash-ledger__stats b { display: block; font-size: 30px; font-weight: 800; color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums; }
+  .dash-ledger__stats b em { font-style: normal; font-size: 16px; color: var(--ink-soft); font-weight: 700; }
+  .dash-ledger__stats span { font-size: 11.5px; font-weight: 600; color: var(--ink-soft); }
+  /* "à traiter" : c'est une donnée → reste neutre (orange = action, jamais une donnée). */
+  .dash-ledger__stats .is-todo span { color: var(--ink); font-weight: 700; }
+
+  /* --- Pipeline de campagne : segments largeur ∝ effectif, rampe neutre = progression --- */
+  .pipe { display: flex; gap: 3px; align-items: stretch; }
+  .pipe__seg { min-width: 0; padding: 15px 14px 14px; display: flex; flex-direction: column; border: 1px solid var(--line); }
+  .pipe__seg .c { font-size: 25px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .pipe__seg .l { font-size: 11px; font-weight: 700; line-height: 1.25; margin-top: 4px; }
+  .pipe__s1 { background: var(--surface-2); }
+  .pipe__s1 .c { color: var(--ink-soft); } .pipe__s1 .l { color: var(--ink-faint); }
+  .pipe__s2 { background: oklch(0.918 0.008 55); } .pipe__s2 .c, .pipe__s2 .l { color: var(--ink); }
+  .pipe__s3 { background: oklch(0.836 0.011 48); } .pipe__s3 .c, .pipe__s3 .l { color: var(--ink); }
+  .pipe__s4 { background: oklch(0.440 0.014 38); border-color: transparent; } .pipe__s4 .c, .pipe__s4 .l { color: var(--surface); }
+  .pipe__s5 { background: var(--ink); border-color: transparent; } .pipe__s5 .c, .pipe__s5 .l { color: var(--surface); }
+  .pipe__act { margin-top: 11px; align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; color: var(--on-orange); background: var(--corica-orange); padding: 4px 10px; text-decoration: none; transition: background 130ms ease; }
+  .pipe__act:hover { background: var(--corica-orange-strong); }
+
+  /* --- Split : 9-Box (héros) + Performance --- */
+  .dash-split { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; align-items: start; }
+
+  .d9 { display: grid; grid-template-columns: 22px 1fr; grid-template-rows: 1fr 22px; gap: 9px; max-width: 540px; margin: 0 auto; }
+  .d9__y { grid-column: 1; grid-row: 1; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+  .d9__grid { grid-column: 2; grid-row: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 6px; aspect-ratio: 1.28; }
+  .d9__x { grid-column: 2; grid-row: 2; text-align: center; align-self: center; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+  .d9__c { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 1px solid var(--line); }
+  .d9__c b { font-size: 23px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .d9__c span { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+  .d9-0 { background: var(--surface-2); } .d9-0 b { color: var(--ink-faint); } .d9-0 span { color: var(--ink-faint); }
+  .d9-1 { background: oklch(0.910 0.008 52); } .d9-1 b, .d9-1 span { color: var(--ink); }
+  .d9-2 { background: oklch(0.822 0.012 46); } .d9-2 b, .d9-2 span { color: var(--ink); }
+  .d9-3 { background: oklch(0.470 0.014 38); } .d9-3 b, .d9-3 span { color: var(--surface); }
+
+  /* --- Performance : évolution trimestrielle (SVG) + distribution des notes --- */
+  .dash-perf { display: flex; flex-direction: column; }
+  .dash-perf__split { padding-top: 18px; margin-top: 18px; border-top: 1px solid var(--line-soft); }
+  .distrow { display: flex; align-items: center; gap: 12px; }
+  .distrow + .distrow { margin-top: 10px; }
+  .distrow__l { flex: 0 0 84px; font-size: 11.5px; font-weight: 700; color: var(--ink); }
+  .distrow__bar { flex: 1; height: 9px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+  .distrow__bar i { display: block; height: 100%; background: var(--ink-soft); }
+  .distrow__n { flex: 0 0 18px; text-align: right; font-size: 12px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 1180px) { .dash-split { grid-template-columns: 1fr; } .dash-ledger { grid-template-columns: 1fr; gap: 18px; } .dash-ledger__stats { justify-content: flex-start; } .dash-ledger__stats > div:first-child { padding-left: 0; } }
 </style>
 </head>
 <body>
@@ -104,115 +172,128 @@
     </header>
 
     <div class="content">
-      <h2 style="font-size:17px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:9px">
-        <svg viewBox="0 0 512 512" width="18" height="18" fill="var(--ink-soft)"><rect x="32" y="256" width="96" height="224"/><rect x="208" y="160" width="96" height="320"/><rect x="384" y="64" width="96" height="416"/></svg>
-        Rapports &amp; Statistiques
-      </h2>
-      <p class="muted" style="font-size:12.5px;margin:0 0 14px">9 collaborateurs · Campagne 2026 en cours</p>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;margin-bottom:22px">
-        <!-- BarChart : État des Objectifs (KPIs) -->
-        <section class="panel">
-          <div class="panel__head">
-            <svg viewBox="0 0 512 512" width="18" height="18" fill="var(--ink-soft)" style="flex:none"><rect x="32" y="256" width="96" height="224"/><rect x="208" y="160" width="96" height="320"/><rect x="384" y="64" width="96" height="416"/></svg>
-            <h2>État des Objectifs (KPIs)</h2>
-          </div>
-          <div class="panel__body">
-            <svg viewBox="0 0 380 200" width="100%" height="220">
-              <!-- Grille + axe -->
-              <line x1="40" y1="20" x2="40" y2="160" stroke="var(--line)" stroke-width="1"/>
-              <line x1="40" y1="160" x2="360" y2="160" stroke="var(--line)" stroke-width="1"/>
-              <g font-size="10" fill="var(--ink-faint)" font-family="Archivo, sans-serif">
-                <line x1="36" y1="160" x2="360" y2="160" stroke="var(--line-soft)" stroke-width="1"/>
-                <line x1="36" y1="121" x2="360" y2="121" stroke="var(--line-soft)" stroke-width="1"/>
-                <line x1="36" y1="82"  x2="360" y2="82"  stroke="var(--line-soft)" stroke-width="1"/>
-                <line x1="36" y1="43"  x2="360" y2="43"  stroke="var(--line-soft)" stroke-width="1"/>
-                <text x="30" y="163" text-anchor="end">0</text>
-                <text x="30" y="124" text-anchor="end">3</text>
-                <text x="30" y="85"  text-anchor="end">6</text>
-                <text x="30" y="46"  text-anchor="end">9</text>
-              </g>
-              <!-- Soumis : 8 / 9 -->
-              <rect x="130" y="56" width="46" height="104" fill="var(--ink-soft)"/>
-              <text x="153" y="47" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)" font-family="Archivo, sans-serif">8</text>
-              <!-- Attente : 1 / 9 -->
-              <rect x="204" y="147" width="46" height="13" fill="var(--line-soft)" stroke="var(--line)" stroke-width="1"/>
-              <text x="227" y="138" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink-soft)" font-family="Archivo, sans-serif">1</text>
-              <text x="190" y="178" text-anchor="middle" font-size="11" fill="var(--ink-soft)" font-weight="700" font-family="Archivo, sans-serif">KPIs</text>
-            </svg>
-            <div class="nb-legend" style="margin-top:6px;padding-top:12px;justify-content:center">
-              <span><i style="background:var(--ink-soft)"></i>Soumis</span>
-              <span><i style="background:var(--line-soft);border:1px solid var(--line)"></i>En attente</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- Avancement Global -->
-        <section class="panel">
-          <div class="panel__head">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ink-soft)" stroke-width="2" style="flex:none"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>
-            <h2>Avancement Global</h2>
-          </div>
-          <div class="panel__body">
-            <div class="skill-row">
-              <span class="skill-row__name">Anzoumana Diakite</span>
-              <div class="skill-bar"><div class="skill-bar__fill" style="width:25%"></div></div>
-              <span class="skill-row__pct num">25%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-row__name">Issiaka Konate</span>
-              <div class="skill-bar"><div class="skill-bar__fill" style="width:25%"></div></div>
-              <span class="skill-row__pct num">25%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-row__name">Siaka Djakite</span>
-              <div class="skill-bar"><div class="skill-bar__fill" style="width:50%"></div></div>
-              <span class="skill-row__pct num">50%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-row__name">Fiacre Tossou</span>
-              <div class="skill-bar"><div class="skill-bar__fill" style="width:75%"></div></div>
-              <span class="skill-row__pct num">75%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-row__name">Arouna Sankara</span>
-              <div class="skill-bar"><div class="skill-bar__fill" style="width:100%"></div></div>
-              <span class="skill-row__pct num">100%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-row__name">Kamoko Kone</span>
-              <div class="skill-bar"><div class="skill-bar__fill" style="width:5%"></div></div>
-              <span class="skill-row__pct num">5%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-row__name">Issouf Kone</span>
-              <div class="skill-bar"><div class="skill-bar__fill" style="width:25%"></div></div>
-              <span class="skill-row__pct num">25%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-row__name">Zie Kone</span>
-              <div class="skill-bar"><div class="skill-bar__fill" style="width:50%"></div></div>
-              <span class="skill-row__pct num">50%</span>
-            </div>
-            <div class="skill-row">
-              <span class="skill-row__name">Dognimin Coulibaly</span>
-              <div class="skill-bar"><div class="skill-bar__fill" style="width:75%"></div></div>
-              <span class="skill-row__pct num">75%</span>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- Résumé Global -->
-      <section class="panel" style="background:var(--ink);border-color:var(--ink)">
-        <div style="padding:18px 22px;display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <p style="font-size:15px;font-weight:800;color:#fff;margin:0 0 3px">Résumé Global</p>
-            <p style="font-size:12px;color:oklch(1 0 0 / 0.55);margin:0">1 dossier finalisé sur 9 collaborateurs</p>
-          </div>
-          <span style="font-size:26px;font-weight:800;color:#fff" class="num">11%</span>
+      <!-- Bandeau-registre : avancement (lead) + registre de chiffres -->
+      <section class="dash-ledger" style="margin-bottom:18px">
+        <div>
+          <span class="dash-ledger__k">Campagne 2026 — avancement de l'équipe</span>
+          <div class="dash-ledger__val"><b class="num">47</b><span>%</span></div>
+          <div class="dash-spine"><i style="width:47%"></i></div>
+        </div>
+        <div class="dash-ledger__stats">
+          <div><b class="num">9</b><span>collaborateurs</span></div>
+          <div><b class="num">3,2<em> /4</em></b><span>note moyenne</span></div>
+          <div class="is-todo"><b class="num">5</b><span>à traiter</span></div>
         </div>
       </section>
+
+      <!-- Pipeline de campagne -->
+      <section class="panel" style="margin-bottom:18px">
+        <div class="panel__head" style="justify-content:space-between">
+          <h2>Avancement de la campagne</h2>
+          <span class="muted" style="font-size:12px">9 collaborateurs · 5 étapes du workflow</span>
+        </div>
+        <div class="panel__body">
+          <div class="pipe">
+            <div class="pipe__seg pipe__s1" style="flex:1">
+              <span class="c num">1</span><span class="l">Non démarré</span>
+            </div>
+            <div class="pipe__seg pipe__s2" style="flex:3">
+              <span class="c num">3</span><span class="l">KPIs soumis</span>
+              <a class="pipe__act" href="reviser-kpis.html">3 à réviser →</a>
+            </div>
+            <div class="pipe__seg pipe__s3" style="flex:2">
+              <span class="c num">2</span><span class="l">KPIs validés</span>
+              <a class="pipe__act" href="evaluer.html">2 à évaluer →</a>
+            </div>
+            <div class="pipe__seg pipe__s4" style="flex:2">
+              <span class="c num">2</span><span class="l">Évalué N+1</span>
+            </div>
+            <div class="pipe__seg pipe__s5" style="flex:1">
+              <span class="c num">1</span><span class="l">Clôturé</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Split : 9-Box (héros) + Performance -->
+      <div class="dash-split">
+
+        <!-- Répartition 9-Box de l'équipe -->
+        <section class="panel">
+          <div class="panel__head" style="justify-content:space-between">
+            <h2>Répartition 9-Box de l'équipe</h2>
+            <a href="../partages/9box.html" style="font-size:12px;font-weight:700;color:var(--corica-orange);text-decoration:none">Ouvrir la matrice →</a>
+          </div>
+          <div class="panel__body">
+            <div class="d9">
+              <div class="d9__y">Performance</div>
+              <div class="d9__grid">
+                <!-- Perf HAUTE -->
+                <div class="d9__c d9-0"><b class="num">0</b></div>
+                <div class="d9__c d9-1"><b class="num">1</b></div>
+                <div class="d9__c d9-1"><b class="num">1</b><span>Star</span></div>
+                <!-- Perf MOYENNE -->
+                <div class="d9__c d9-1"><b class="num">1</b></div>
+                <div class="d9__c d9-3"><b class="num">3</b><span>Core</span></div>
+                <div class="d9__c d9-1"><b class="num">1</b></div>
+                <!-- Perf FAIBLE -->
+                <div class="d9__c d9-1"><b class="num">1</b><span>À risque</span></div>
+                <div class="d9__c d9-1"><b class="num">1</b></div>
+                <div class="d9__c d9-0"><b class="num">0</b></div>
+              </div>
+              <div class="d9__x">Potentiel →</div>
+            </div>
+            <p class="muted" style="font-size:12px;margin:16px 0 0;line-height:1.5">9 collaborateurs cartographiés · concentration au <b style="color:var(--ink)">centre (Core)</b>, 1 star confirmée, 1 profil à accompagner.</p>
+          </div>
+        </section>
+
+        <!-- Performance -->
+        <section class="panel">
+          <div class="panel__head"><h2>Performance de l'équipe</h2></div>
+          <div class="panel__body dash-perf">
+
+            <!-- Évolution trimestrielle (note moyenne /4) -->
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+                <span class="muted" style="font-size:12px;font-weight:700;color:var(--ink)">Note moyenne par trimestre</span>
+                <span class="muted" style="font-size:11px">sur 4</span>
+              </div>
+              <svg viewBox="0 0 250 140" width="100%" height="150" font-family="Archivo, sans-serif">
+                <line x1="26" y1="112" x2="240" y2="112" stroke="var(--line)" stroke-width="1"/>
+                <g font-size="9" fill="var(--ink-faint)">
+                  <text x="20" y="115" text-anchor="end">0</text>
+                  <text x="20" y="65"  text-anchor="end">2</text>
+                  <text x="20" y="16"  text-anchor="end">4</text>
+                </g>
+                <!-- T1 2,9 --><rect x="40"  y="39.5" width="38" height="72.5" fill="var(--ink-soft)"/>
+                <!-- T2 3,0 --><rect x="94"  y="37"   width="38" height="75"   fill="var(--ink-soft)"/>
+                <!-- T3 3,1 --><rect x="148" y="34.5" width="38" height="77.5" fill="var(--ink-soft)"/>
+                <!-- T4 3,2 — trimestre focal (orange dataviz autorisé) -->
+                <rect x="202" y="32" width="38" height="80" fill="var(--corica-orange)"/>
+                <g font-size="11" font-weight="800" fill="var(--ink)" text-anchor="middle">
+                  <text x="59"  y="32">2,9</text><text x="113" y="29.5">3,0</text>
+                  <text x="167" y="27">3,1</text><text x="221" y="24.5">3,2</text>
+                </g>
+                <g font-size="10" font-weight="700" fill="var(--ink-soft)" text-anchor="middle">
+                  <text x="59" y="127">T1</text><text x="113" y="127">T2</text>
+                  <text x="167" y="127">T3</text><text x="221" y="127">T4</text>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Distribution des notes -->
+            <div class="dash-perf__split">
+              <span class="muted" style="font-size:12px;font-weight:700;color:var(--ink);display:block;margin-bottom:14px">Distribution des notes</span>
+              <div class="distrow"><span class="distrow__l">Faible</span><div class="distrow__bar"><i style="width:25%"></i></div><span class="distrow__n num">1</span></div>
+              <div class="distrow"><span class="distrow__l">Passable</span><div class="distrow__bar"><i style="width:75%"></i></div><span class="distrow__n num">3</span></div>
+              <div class="distrow"><span class="distrow__l">Bon</span><div class="distrow__bar"><i style="width:100%"></i></div><span class="distrow__n num">4</span></div>
+              <div class="distrow"><span class="distrow__l">Excellent</span><div class="distrow__bar"><i style="width:25%"></i></div><span class="distrow__n num">1</span></div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
     </div>
   </div>
 </div>
