@@ -226,8 +226,8 @@
 
 ### Task 3.1 : Pilotage Pays
 **Files:** Create `maquettes/rh-pays/pilotage.html` · Reference `country-admin/page.tsx` (COUNTRY_ADMIN)
-- [ ] **Step 1 :** Bandeau périmètre « 🇨🇮 Côte d'Ivoire (Sissengué, Ity, Yamoussoukro, Abidjan) ». 4 KPI (Sites Supervisés, Total Talents + « objectifs soumis », Avancement Global ×2 avec barre). Carte « Campagne d'Évaluation Active » **lecture seule** (statut Programmée/En cours ✓/Clôturée + encart Lock « réservé Admin Général et Super Admin »). 4 actions (Gestion Bureau Pays, Équipes Nationales, Révisions RH, Rapport de pilotage). Table « Consolidation par Site » (Site Corica, Admin Local RRH, Effectif, Évaluation Terminée %, Alertes Audit, Action « Examiner Site »). Bouton « Générer le Rapport Pays (PDF) ».
-- [ ] **Step 2 :** Playwright screenshot. Attendu : 4 KPI, campagne en lecture seule avec cadenas, table consolidation par site.
+- [x] **Step 1 :** Bandeau périmètre « 🇨🇮 Côte d'Ivoire (Sissengué, Ity, Yamoussoukro, Abidjan) ». 4 KPI (Sites Supervisés, Total Talents + « objectifs soumis », Avancement Global ×2 avec barre). Carte « Campagne d'Évaluation Active » **lecture seule** (statut Programmée/En cours ✓/Clôturée + encart Lock « réservé Admin Général et Super Admin »). 4 actions (Gestion Bureau Pays, Équipes Nationales, Révisions RH, Rapport de pilotage). Table « Consolidation par Site » (Site Corica, Admin Local RRH, Effectif, Évaluation Terminée %, Alertes Audit, Action « Examiner Site »). Bouton « Générer le Rapport Pays (PDF) ».
+- [x] **Step 2 :** Playwright screenshot. Attendu : 4 KPI, campagne en lecture seule avec cadenas, table consolidation par site. ✓ vérifié 2026-08-10 (rendu conforme charte, zéro requête externe). Note : bandeau campagne laissé **neutre** (pas `campaign-card--ok` vert) pour respecter la palette verrouillée ; statut porté par le pill « En cours ».
 
 ### Task 3.2 : Rapport de Pilotage Pays
 **Files:** Create `maquettes/rh-pays/rapport-pays.html` · Reference `country-admin/page.tsx` (RAPPORT_PILOTAGE_PAYS)
