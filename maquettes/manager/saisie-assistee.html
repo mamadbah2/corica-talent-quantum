@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Saisie assistée</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  /* Coque reprise du gabarit manager/equipe.html. */
+  .rail__logout { margin-left: auto; width: 30px; height: 30px; flex: none; display: grid; place-items: center;
+    border: 1px solid var(--rail-2); color: var(--rail-faint); transition: background 140ms ease, color 140ms ease; }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+  .avatar-link { display: inline-flex; }
+
+  /* Bandeau de provenance : c'est une INFORMATION de gouvernance → neutre encre, jamais orange. */
+  .prov-banner { display: flex; align-items: flex-start; gap: 13px; padding: 15px 18px; border: 1px solid var(--ink); background: var(--surface-2); margin-bottom: 22px; }
+  .prov-banner svg { width: 20px; height: 20px; fill: var(--ink); flex: none; margin-top: 1px; }
+  .prov-banner__t { font-size: 13.5px; font-weight: 800; color: var(--ink); }
+  .prov-banner p { font-size: 12.5px; color: var(--ink-soft); line-height: 1.55; margin: 3px 0 0; }
+  .prov-banner b { color: var(--ink); }
+
+  /* Tag de provenance (repère « saisie assistée ») — neutre. */
+  .prov-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; padding: 3px 10px; border: 1px solid var(--ink); color: var(--ink); background: var(--surface); white-space: nowrap; }
+  .prov-tag svg { width: 11px; height: 11px; fill: currentColor; }
+
+  /* Zone dépôt de fichier (livrables) — repris de employe/evaluation.html. */
+  .dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-height: 72px; padding: 10px; text-align: center; cursor: pointer;
+    border: 1.5px dashed var(--line); background: var(--surface-2); color: var(--ink-faint);
+    transition: border-color 140ms ease, color 140ms ease, background 140ms ease; }
+  .dropzone:hover { border-color: var(--ink-faint); color: var(--ink-soft); background: var(--surface); }
+  .dropzone svg { width: 18px; height: 18px; }
+  .dropzone span { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.3; }
+  .objcard .textarea { min-height: 72px; font-size: 12.5px; padding: 8px 10px; }
+
+  /* Synthèse + footer — repris de employe/evaluation.html. */
+  .evalsummary { display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    background: var(--surface-2); border: 1px solid var(--line); padding: 18px 26px; margin: 22px 0 0; }
+  .evalsummary__block { display: flex; flex-direction: column; gap: 4px; }
+  .evalsummary__block--right { align-items: flex-end; text-align: right; }
+  .evalsummary__label { font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
+  .evalsummary__value { font-size: 26px; font-weight: 800; color: var(--ink); }
+  .evalfoot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    margin-top: 20px; padding: 16px 20px; background: var(--surface-2); border-top: 1px solid var(--line); }
+  .evalfoot__count { font-size: 13px; color: var(--ink-soft); font-weight: 500; }
+  .evalfoot__actions { display: flex; gap: 10px; }
+
+  /* Pavé PIN — repris du login kiosque. */
+  .pindisplay { display: flex; gap: 12px; justify-content: center; margin: 6px 0 22px; }
+  .pindot { width: 15px; height: 15px; border: 2px solid var(--line); transition: all 140ms ease; }
+  .pindot.is-filled { background: var(--corica-orange); border-color: var(--corica-orange); }
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; }
+  .keypad button { padding: 16px 0; font-size: 21px; font-weight: 700; border: 1px solid var(--line); background: var(--surface); cursor: pointer; color: var(--ink); transition: background 120ms ease, border-color 120ms ease; font-variant-numeric: tabular-nums; }
+  .keypad button:hover { background: var(--surface-2); }
+  .keypad button:active { background: var(--corica-orange-soft); border-color: var(--corica-orange); }
+  .keypad button.k-act { font-size: 14px; color: var(--ink-soft); font-weight: 600; }
+
+  /* Verrouillage du formulaire une fois soumis. */
+  #assist-form.is-done { opacity: 0.55; pointer-events: none; }
+  .prov-done { display: none; align-items: flex-start; gap: 13px; padding: 16px 18px; border: 1px solid var(--ink); background: var(--ink); color: var(--surface); margin-top: 20px; }
+  .prov-done svg { width: 20px; height: 20px; fill: var(--surface); flex: none; margin-top: 1px; }
+  .prov-done b { color: var(--surface); }
+  .prov-done p { font-size: 12.5px; color: oklch(1 0 0 / 0.72); line-height: 1.55; margin: 3px 0 0; }
+  .prov-done__t { font-size: 13.5px; font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Espace Manager</div>
+    <a class="navitem is-active" href="equipe.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
+      <span class="navlabel">Mon Équipe Directe</span>
+    </a>
+    <a class="navitem" href="../partages/9box.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="16" y="16" width="144" height="144"/><rect x="184" y="16" width="144" height="144"/><rect x="352" y="16" width="144" height="144"/><rect x="16" y="184" width="144" height="144"/><rect x="184" y="184" width="144" height="144"/><rect x="352" y="184" width="144" height="144"/><rect x="16" y="352" width="144" height="144"/><rect x="184" y="352" width="144" height="144"/><rect x="352" y="352" width="144" height="144"/></svg>
+      <span class="navlabel">Matrice 9-Box</span>
+    </a>
+    <a class="navitem" href="rapports.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="32" y="256" width="96" height="224"/><rect x="208" y="160" width="96" height="320"/><rect x="384" y="64" width="96" height="416"/></svg>
+      <span class="navlabel">Rapports</span>
+    </a>
+    <a class="navitem" href="competences-equipe.html">
+      <svg viewBox="0 0 576 512" fill="currentColor"><path d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"/></svg>
+      <span class="navlabel">Compétences</span>
+    </a>
+    <a class="navitem" href="inbox.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M96 64C60.7 64 32 92.7 32 128l0 256c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64L96 64zM64 128c0-17.7 14.3-32 32-32l320 0c17.7 0 32 14.3 32 32l0 96-96 0c-8.8 0-16 5.9-18.3 14.4C325 264.6 302 288 256 288s-69-23.4-77.7-49.6C176 229.9 168.8 224 160 224l-96 0 0-96zm0 128 82.7 0c14.3 33.5 51.3 64 109.3 64s95-30.5 109.3-64L448 256l0 128c0 17.7-14.3 32-32 32L96 416c-17.7 0-32-14.3-32-32l0-128z"/></svg>
+      <span class="navlabel">Inbox &amp; Approbations</span>
+    </a>
+    <a class="navitem" href="arbitrage-n2.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M384 32l128 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L398.4 96c-5.2 25.8-22.9 47.1-46.4 57.3L352 448l160 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-192 0-192 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l160 0 0-294.7c-23.5-10.3-41.2-31.6-46.4-57.3L128 96c-17.7 0-32-14.3-32-32s14.3-32 32-32l128 0c14.6-19.4 37.8-32 64-32s49.4 12.6 64 32zm55.6 288l144.9 0L512 214.3 439.6 320zM512 384c-62.9 0-115.2-34-126.9-79.1c-3.5-13.5 4.2-27.2 15.9-34.7l108.4-158.4c9.8-14.3 30.6-14.3 40.4 0L659.6 270.2c11.6 7.5 19.4 21.2 15.9 34.7C627.2 350 574.9 384 512 384zM126.9 320c-62.9 0-115.2-34-126.9-79.1c-3.5-13.5 4.2-27.2 15.9-34.7L124.3 47.9c9.8-14.3 30.6-14.3 40.4 0L273.1 206.2c11.6 7.5 19.4 21.2 15.9 34.7C277.2 286 224.9 320 162 320l-35.1 0z"/></svg>
+      <span class="navlabel">Arbitrage N+2</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="profil.html" title="Voir mon profil">
+        <div class="avatar">MT</div>
+        <div class="who"><b>Mamadou Traoré</b><small>MANAGER</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Saisie assistée — Auto-évaluation</h1>
+        <p>Pour un collaborateur sans accès à l'application · Campagne 2026</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <span class="prov-tag">
+        <svg viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
+        Saisie assistée
+      </span>
+      <a class="avatar-link" href="equipe.html" title="Retour à l'équipe"><div class="avatar avatar--sm">MT</div></a>
+    </header>
+
+    <div class="content">
+
+      <!-- Bandeau de provenance -->
+      <div class="prov-banner">
+        <svg viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
+        <div>
+          <div class="prov-banner__t">Vous remplissez l'auto-évaluation de Kamoko Koné (Électricien Industriel · matricule 10062)</div>
+          <p>Ce collaborateur n'a pas d'accès à l'application (poste de terrain, sans équipement). La session a été <b>déverrouillée par son code PIN</b>. À la fin, <b>Kamoko devra saisir son PIN</b> pour valider et signer. Cette évaluation sera enregistrée avec la provenance <b>« assistée »</b>, visible par le N+2 et le RH.</p>
+        </div>
+      </div>
+
+      <div id="assist-form">
+        <div class="objcards">
+
+          <!-- Objectif 1 -->
+          <section class="panel objcard">
+            <div class="objcard__head">
+              <span class="objcard__num">Objectif 1</span>
+              <p class="objcard__title">Fiabiliser l'alimentation électrique des équipements de production, par une maintenance préventive rigoureuse des installations.</p>
+            </div>
+            <p class="objcard__meta">Mesure&nbsp;: % de disponibilité électrique. · Échéance&nbsp;: 31/12/2026</p>
+            <div class="objcard__row">
+              <div class="objcard__block objcard__block--eval">
+                <span class="objcard__label">Évaluation de Kamoko</span>
+                <div class="rating" data-rating>
+                  <button>1</button><button>2</button><button class="is-on">3</button><button>4</button>
+                </div>
+                <span class="eval-label">Bon</span>
+              </div>
+              <div class="objcard__block objcard__block--file">
+                <span class="objcard__label">Livrable</span>
+                <label class="dropzone">
+                  <svg viewBox="0 0 512 512" fill="currentColor"><path d="M144 480L144 384L48 384c-26.5 0-48-21.5-48-48L0 176c0-26.5 21.5-48 48-48l32 0 0-80c0-26.5 21.5-48 48-48L336 0c26.5 0 48 21.5 48 48l0 80 32 0c26.5 0 48 21.5 48 48l0 160c0 26.5-21.5 48-48 48l-96 0 0 96c0 26.5-21.5 48-48 48l-96 0c-26.5 0-48-21.5-48-48z"/></svg>
+                  <span>Joindre Fichier</span>
+                  <input type="file" hidden>
+                </label>
+              </div>
+              <div class="objcard__block objcard__block--comment">
+                <span class="objcard__label">Commentaire (dicté par Kamoko)</span>
+                <textarea class="textarea" placeholder="Commentaire du collaborateur…">Peu d'arrêts électriques ce semestre, maintenance préventive tenue à jour.</textarea>
+              </div>
+            </div>
+          </section>
+
+          <!-- Objectif 2 -->
+          <section class="panel objcard">
+            <div class="objcard__head">
+              <span class="objcard__num">Objectif 2</span>
+              <p class="objcard__title">Respecter les procédures HSE et de consignation électrique (LOTO) sur l'ensemble des interventions.</p>
+            </div>
+            <p class="objcard__meta">Mesure&nbsp;: Zéro incident électrique. · Échéance&nbsp;: 31/12/2026</p>
+            <div class="objcard__row">
+              <div class="objcard__block objcard__block--eval">
+                <span class="objcard__label">Évaluation de Kamoko</span>
+                <div class="rating" data-rating>
+                  <button>1</button><button>2</button><button class="is-on">3</button><button>4</button>
+                </div>
+                <span class="eval-label">Bon</span>
+              </div>
+              <div class="objcard__block objcard__block--file">
+                <span class="objcard__label">Livrable</span>
+                <label class="dropzone">
+                  <svg viewBox="0 0 512 512" fill="currentColor"><path d="M144 480L144 384L48 384c-26.5 0-48-21.5-48-48L0 176c0-26.5 21.5-48 48-48l32 0 0-80c0-26.5 21.5-48 48-48L336 0c26.5 0 48 21.5 48 48l0 80 32 0c26.5 0 48 21.5 48 48l0 160c0 26.5-21.5 48-48 48l-96 0 0 96c0 26.5-21.5 48-48 48l-96 0c-26.5 0-48-21.5-48-48z"/></svg>
+                  <span>Joindre Fichier</span>
+                  <input type="file" hidden>
+                </label>
+              </div>
+              <div class="objcard__block objcard__block--comment">
+                <span class="objcard__label">Commentaire (dicté par Kamoko)</span>
+                <textarea class="textarea" placeholder="Commentaire du collaborateur…">Consignation systématique avant intervention, aucun incident sur la période.</textarea>
+              </div>
+            </div>
+          </section>
+
+          <!-- Objectif 3 -->
+          <section class="panel objcard">
+            <div class="objcard__head">
+              <span class="objcard__num">Objectif 3</span>
+              <p class="objcard__title">Réduire le délai moyen d'intervention sur les pannes électriques de la ligne de production.</p>
+            </div>
+            <p class="objcard__meta">Mesure&nbsp;: Délai moyen d'intervention (min). · Échéance&nbsp;: 31/12/2026</p>
+            <div class="objcard__row">
+              <div class="objcard__block objcard__block--eval">
+                <span class="objcard__label">Évaluation de Kamoko</span>
+                <div class="rating" data-rating>
+                  <button>1</button><button class="is-on">2</button><button>3</button><button>4</button>
+                </div>
+                <span class="eval-label">Passable</span>
+              </div>
+              <div class="objcard__block objcard__block--file">
+                <span class="objcard__label">Livrable</span>
+                <label class="dropzone">
+                  <svg viewBox="0 0 512 512" fill="currentColor"><path d="M144 480L144 384L48 384c-26.5 0-48-21.5-48-48L0 176c0-26.5 21.5-48 48-48l32 0 0-80c0-26.5 21.5-48 48-48L336 0c26.5 0 48 21.5 48 48l0 80 32 0c26.5 0 48 21.5 48 48l0 160c0 26.5-21.5 48-48 48l-96 0 0 96c0 26.5-21.5 48-48 48l-96 0c-26.5 0-48-21.5-48-48z"/></svg>
+                  <span>Joindre Fichier</span>
+                  <input type="file" hidden>
+                </label>
+              </div>
+              <div class="objcard__block objcard__block--comment">
+                <span class="objcard__label">Commentaire (dicté par Kamoko)</span>
+                <textarea class="textarea" placeholder="Commentaire du collaborateur…">Délais encore variables faute de pièces en stock, marge de progression identifiée.</textarea>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Synthèse -->
+        <div class="evalsummary">
+          <div class="evalsummary__block">
+            <span class="evalsummary__label">Note moyenne (auto-évaluation)</span>
+            <div class="evalsummary__value num">2,7/4</div>
+          </div>
+          <div class="evalsummary__block evalsummary__block--right">
+            <span class="evalsummary__label">Objectifs évalués</span>
+            <div class="evalsummary__value num">3/3</div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="evalfoot">
+          <div class="evalfoot__count">La soumission exige le code PIN de Kamoko Koné (contre-validation).</div>
+          <div class="evalfoot__actions">
+            <a class="btn btn--ghost" href="equipe.html">Annuler</a>
+            <button class="btn btn--ghost">Enregistrer le brouillon</button>
+            <button class="btn btn--primary" id="btn-submit">Soumettre avec le PIN de Kamoko</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- État de confirmation (révélé après validation PIN) -->
+      <div class="prov-done" id="prov-done">
+        <svg viewBox="0 0 512 512"><path d="M470.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L192 338.7 425.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
+        <div>
+          <div class="prov-done__t">Auto-évaluation soumise — Provenance : ASSISTÉE</div>
+          <p>Saisie par Mamadou Traoré (N+1), contre-validée par le code PIN de Kamoko Koné. Le dossier est transmis pour évaluation N+1 ; la mention « assistée » remontera au N+2 et au RH.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modale de validation PIN (soumission) -->
+<div class="modal-scrim" id="pin-modal">
+  <div class="modal">
+    <div class="modal__head">
+      <h2>Validation par PIN — Kamoko Koné</h2>
+      <p>Kamoko doit saisir son code PIN personnel pour valider et signer son auto-évaluation.</p>
+      <button class="modal__close" type="button" aria-label="Fermer">
+        <svg viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
+      </button>
+    </div>
+    <div class="modal__body">
+      <div class="pindisplay" id="pin-dots">
+        <span class="pindot"></span><span class="pindot"></span><span class="pindot"></span><span class="pindot"></span>
+      </div>
+      <div class="keypad" id="pin-keys">
+        <button>1</button><button>2</button><button>3</button>
+        <button>4</button><button>5</button><button>6</button>
+        <button>7</button><button>8</button><button>9</button>
+        <button class="k-act" data-act="clear">Effacer</button><button>0</button><button class="k-act" data-act="enter">Valider</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+(function () {
+  var scrim = document.getElementById("pin-modal");
+  var openBtn = document.getElementById("btn-submit");
+  var dots = scrim.querySelectorAll(".pindot");
+  var keys = document.getElementById("pin-keys");
+  var pin = "";
+  function render() { dots.forEach(function (d, i) { d.classList.toggle("is-filled", i < pin.length); }); }
+  function open() { pin = ""; render(); scrim.classList.add("is-open"); }
+  function close() { scrim.classList.remove("is-open"); }
+  if (openBtn) openBtn.addEventListener("click", open);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) close(); });
+  scrim.querySelectorAll(".modal__close").forEach(function (c) { c.addEventListener("click", close); });
+  keys.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var act = b.dataset.act;
+    if (act === "clear") { pin = ""; }
+    else if (act === "enter") {
+      if (pin.length === 4) {
+        close();
+        document.getElementById("assist-form").classList.add("is-done");
+        document.getElementById("prov-done").style.display = "flex";
+      }
+      return;
+    } else if (pin.length < 4) { pin += b.textContent.trim(); }
+    render();
+  });
+})();
+</script>
+</body>
+</html>
