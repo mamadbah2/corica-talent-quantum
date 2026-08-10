@@ -231,16 +231,16 @@
 
 ### Task 3.2 : Rapport de Pilotage Pays
 **Files:** Create `maquettes/rh-pays/rapport-pays.html` · Reference `country-admin/page.tsx` (RAPPORT_PILOTAGE_PAYS)
-- [ ] **Step 1 :** Jauge circulaire SVG « Ratio Global Pays Évalué » (X/Y collaborateurs). Bloc « Effectif & % d'Évaluation par Site » (barres + badges %). Table « Consolidation par Département » (Département, Effectif Total, Évalués, Taux d'Achèvement) — données du code (Opérations Minières 210/200/95 %, Maintenance 150/120/80 %, HQ & Support 180/179/99 %).
-- [ ] **Step 2 :** Playwright screenshot. Attendu : jauge lisible, barres par site, table par département.
+- [x] **Step 1 :** Jauge circulaire SVG « Ratio Global Pays Évalué » (X/Y collaborateurs). Bloc « Effectif & % d'Évaluation par Site » (barres + badges %). Table « Consolidation par Département » (Département, Effectif Total, Évalués, Taux d'Achèvement) — données du code (Opérations Minières 210/200/95 %, Maintenance 150/120/80 %, HQ & Support 180/179/99 %). Jauge réutilise `.gauge` (surchargée en `--ink` : ratio = donnée, pas orange) ; % en texte neutre (pas de badges colorés, palette verrouillée).
+- [x] **Step 2 :** Playwright screenshot. ✓ vérifié 2026-08-10 (jauge 87 % = 471/540, barres par site neutres, table départements). Zéro requête externe.
 
 ### Task 3.3 : Gestion Bureau Pays
 **Files:** Create `maquettes/rh-pays/gestion-bureau.html` · Reference `CountryManagementView.tsx` (mode restreint pays)
-- [ ] **Step 1 : Sous-vues MENU + MANAGE_SITES**
-  MENU : fil d'Ariane, titre « Gestion des Sites — Côte d'Ivoire », 3 KPI (Votre pays, Sites totaux, HQ configurés), boutons Gérer les Sites / Affecter un Administrateur (Créer un Pays masqué en restreint), liste pays/sites (chips HQ/site). MANAGE_SITES : select pays, liste sites (HQ non supprimable), champ « Nom du nouveau site… » + Ajouter.
-- [ ] **Step 2 : Sous-vue ASSIGN_ADMIN**
-  Notice Lock, select Pays + Site, formulaire (Matricule, Nom, Email, Fonction, Département), 5 cartes rôles assignables (Coordinateur Pays, Administrateur Site, Évaluateur N+1, Employé, Responsable Calibration + route), bouton « Affecter l'Administrateur ».
-- [ ] **Step 3 :** Playwright screenshot des sous-vues (bascule JS). Attendu : 3 sous-vues, Créer un Pays absent (mode restreint), 5 rôles.
+- [x] **Step 1 : Sous-vues MENU + MANAGE_SITES**
+  MENU : fil d'Ariane, titre « Gestion des Sites — Côte d'Ivoire », 3 KPI (Votre pays, Sites totaux, HQ configurés), boutons Gérer les Sites / Affecter un Administrateur (Créer un Pays masqué en restreint), liste pays/sites (chips HQ/site). MANAGE_SITES : select pays, liste sites (HQ non supprimable), champ « Nom du nouveau site… » + Ajouter. Bascule via `.chipfilter` (onglets app.css).
+- [x] **Step 2 : Sous-vue ASSIGN_ADMIN**
+  Notice Lock, select Pays + Site, formulaire (Matricule, Nom, Email, Fonction, Département), 5 cartes rôles assignables (Coordinateur Pays, Administrateur Site, Évaluateur N+1, Employé, Responsable Calibration + route), bouton « Affecter l'Administrateur ». Cartes sélectionnables (bordure orange = sélection, conforme charte).
+- [x] **Step 3 :** Playwright screenshot des sous-vues (bascule JS). ✓ vérifié 2026-08-10 : 3 sous-vues OK, Créer un Pays absent (mode restreint), 5 rôles, zéro requête externe.
 
 ### Task 3.4 : Checkpoint RH Pays + clôture
 - [ ] **Step 1 :** Revue des écrans RH + réutilisation correcte de 9-box / Mon Profil / Mon Équipe (liens rail vers `../partages/9box.html`, `../employe/profil.html` adapté, `../manager/equipe.html`). Vérifier fil narratif Blaise + fidélité (lecture seule campagne, pas de modules Compétences).
