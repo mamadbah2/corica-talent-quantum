@@ -243,9 +243,9 @@
 - [x] **Step 3 :** Playwright screenshot des sous-vues (bascule JS). ✓ vérifié 2026-08-10 : 3 sous-vues OK, Créer un Pays absent (mode restreint), 5 rôles, zéro requête externe.
 
 ### Task 3.4 : Checkpoint RH Pays + clôture
-- [ ] **Step 1 :** Revue des écrans RH + réutilisation correcte de 9-box / Mon Profil / Mon Équipe (liens rail vers `../partages/9box.html`, `../employe/profil.html` adapté, `../manager/equipe.html`). Vérifier fil narratif Blaise + fidélité (lecture seule campagne, pas de modules Compétences).
-- [ ] **Step 2 :** Mettre à jour `index.html` : hub final avec les 3 rôles et tous leurs écrans.
-- [ ] **Step 3 :** Revue globale des 3 rôles via Playwright (parcours complet, zéro requête externe sur tous les écrans). Présenter à l'utilisateur.
+- [x] **Step 1 :** Revue des écrans RH + réutilisation correcte de 9-box / Mon Profil / Mon Équipe (liens rail vers `../partages/9box.html`, `../employe/profil.html`, `../manager/equipe.html` — tous 200). Fil narratif Blaise OK, campagne en lecture seule, pas de modules Compétences dans le rail RH Pays.
+- [x] **Step 2 :** `index.html` mis à jour : la carte « Rôle 3 · RH Pays » (ex-« à venir ») pointe désormais vers `rh-pays/pilotage.html` et liste les 3 écrans ; sous-titre « Les 3 rôles sont livrés ».
+- [x] **Step 3 :** Revue globale Playwright ✓ 2026-08-10 : les 8 URL du parcours (index + 3 RH Pays + 9box + equipe + profil + login) répondent 200, zéro requête externe (hors favicon navigateur). **Phase 3 clôturée — les 3 parcours sont livrés.**
 
 ---
 
