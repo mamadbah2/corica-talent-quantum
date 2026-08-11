@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Pays &amp; Sites</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .rail__logout { margin-left: auto; width: 30px; height: 30px; flex: none; display: grid; place-items: center; border: 1px solid var(--rail-2); color: var(--rail-faint); transition: background 140ms ease, color 140ms ease; }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+  .avatar-link { display: inline-flex; }
+
+  .subnav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .subview { display: none; }
+  .subview.is-shown { display: block; }
+  .lock-note { display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: var(--ink-soft); background: var(--surface-2); border: 1px solid var(--line); padding: 11px 14px; margin-bottom: 18px; }
+  .lock-note svg { flex: none; width: 14px; height: 14px; fill: var(--ink-faint); }
+  .sitechips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sitechip { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; padding: 5px 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); }
+  .sitechip small { color: var(--ink-faint); font-weight: 500; }
+  .sitechip--hq { background: var(--ink); color: white; border-color: var(--ink); }
+  .sitechip--hq small { color: rgba(255,255,255,0.6); }
+  .siterow { display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; border-bottom: 1px solid var(--line-soft); }
+  .siterow:last-child { border-bottom: none; }
+  .siterow__id { display: flex; align-items: center; gap: 11px; font-size: 14px; }
+  .siterow__hq { font-size: 10px; font-weight: 800; letter-spacing: 0.04em; background: var(--ink); color: white; padding: 2px 7px; }
+  .siterow__na { font-size: 12px; color: var(--ink-faint); font-style: italic; }
+  .addsite { display: flex; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--line); background: var(--surface-2); }
+  .addsite .input { flex: 1; }
+  .rolecards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .rolecard { text-align: left; padding: 14px 16px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; transition: border-color 140ms ease, background 140ms ease; font-family: inherit; }
+  .rolecard:hover { border-color: var(--corica-orange-ring); }
+  .rolecard.is-sel { border-color: var(--corica-orange); background: var(--corica-orange-soft); }
+  .rolecard b { display: block; font-size: 14px; font-weight: 700; color: var(--ink); }
+  .rolecard p { font-size: 12px; color: var(--ink-soft); margin: 3px 0 0; }
+  .rolecard .route { display: block; font-size: 10.5px; font-weight: 700; color: var(--ink-faint); margin-top: 6px; }
+  .kpi-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .kpi-card { background: var(--rail); color: var(--rail-ink); padding: 18px 20px; }
+  .kpi-card .l { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--rail-faint); }
+  .kpi-card .n { font-size: 30px; font-weight: 800; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .country-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line-soft); }
+  .country-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Super Administration</div>
+    <a class="navitem" href="gouvernance.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0zM256 66.8l0 378.1C394 378 431.1 230.5 432 141.4L256 66.8z"/></svg>
+      <span class="navlabel">Gouvernance &amp; GRC</span>
+    </a>
+    <a class="navitem is-active" href="pays-sites.html">
+      <svg viewBox="0 0 384 512" fill="currentColor"><path d="M48 0C21.5 0 0 21.5 0 48L0 464c0 26.5 21.5 48 48 48l96 0 0-80c0-26.5 21.5-48 48-48s48 21.5 48 48l0 80 96 0c26.5 0 48-21.5 48-48l0-416c0-26.5-21.5-48-48-48L48 0zM64 240c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zm112-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zM80 96l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zM272 96l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16z"/></svg>
+      <span class="navlabel">Pays &amp; Sites</span>
+    </a>
+    <a class="navitem" href="../partages/9box.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="16" y="16" width="144" height="144"/><rect x="184" y="16" width="144" height="144"/><rect x="352" y="16" width="144" height="144"/><rect x="16" y="184" width="144" height="144"/><rect x="184" y="184" width="144" height="144"/><rect x="352" y="184" width="144" height="144"/><rect x="16" y="352" width="144" height="144"/><rect x="184" y="352" width="144" height="144"/><rect x="352" y="352" width="144" height="144"/></svg>
+      <span class="navlabel">Matrice 9-Box</span>
+    </a>
+    <a class="navitem" href="../manager/equipe.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
+      <span class="navlabel">Mon Équipe Directe</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="profil.html" title="Voir mon profil">
+        <div class="avatar">DI</div>
+        <div class="who"><b>Djibo Ibouraima</b><small>SUPER ADMIN</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Pays &amp; Sites</h1>
+        <p>Djibo Ibouraima · SUPER ADMIN · Périmètre Groupe</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <span class="pill pill--closed">Autorité Groupe</span>
+    </header>
+
+    <div class="content">
+
+      <div class="subnav">
+        <button class="chipfilter is-on" data-view="menu">Vue d'ensemble</button>
+        <button class="chipfilter" data-view="create">Créer un pays</button>
+        <button class="chipfilter" data-view="sites">Gérer les sites</button>
+        <button class="chipfilter" data-view="assign">Affecter un administrateur</button>
+      </div>
+
+      <!-- ══ MENU ══ -->
+      <section class="subview is-shown" id="view-menu">
+        <div style="margin-bottom:18px">
+          <h2 style="font-size:19px;font-weight:700">Gestion des pays &amp; sites</h2>
+          <p class="muted" style="font-size:12.5px;margin-top:3px">Créez des pays avec leur HQ, ajoutez des sites et affectez des administrateurs locaux. Périmètre : groupe entier.</p>
+        </div>
+
+        <div class="kpi-cards">
+          <div class="kpi-card"><div class="l">Pays enregistrés</div><div class="n">4</div></div>
+          <div class="kpi-card"><div class="l">Sites totaux</div><div class="n">13</div></div>
+          <div class="kpi-card"><div class="l">HQ configurés</div><div class="n">4</div></div>
+        </div>
+
+        <div class="row" style="gap:12px;margin-bottom:20px">
+          <button class="btn btn--primary js-goto" data-view="create">Créer un pays &amp; HQ</button>
+          <button class="btn btn--ghost js-goto" data-view="sites">Gérer les sites</button>
+          <button class="btn btn--ghost js-goto" data-view="assign">Affecter un administrateur</button>
+        </div>
+
+        <section class="panel">
+          <div class="panel__head"><h2>Pays enregistrés</h2><div class="topbar__spacer"></div><span class="sub">4 pays</span></div>
+          <div class="panel__body" style="padding-top:8px;padding-bottom:8px">
+            <div class="country-row">
+              <div class="cell-person"><span class="avatar avatar--sm">CI</span><span><b>Côte d'Ivoire</b><small style="color:var(--ink-faint)">ID #221 · 4 sites</small></span></div>
+              <div class="sitechips" style="max-width:60%">
+                <span class="sitechip sitechip--hq">HQ · Abidjan <small>#01</small></span>
+                <span class="sitechip">Sissengué <small>#02</small></span>
+                <span class="sitechip">Ity <small>#03</small></span>
+                <span class="sitechip">Yamoussoukro <small>#04</small></span>
+              </div>
+            </div>
+            <div class="country-row">
+              <div class="cell-person"><span class="avatar avatar--sm">ML</span><span><b>Mali</b><small style="color:var(--ink-faint)">ID #223 · 3 sites</small></span></div>
+              <div class="sitechips" style="max-width:60%">
+                <span class="sitechip sitechip--hq">HQ · Bamako <small>#01</small></span>
+                <span class="sitechip">Sadiola <small>#02</small></span>
+                <span class="sitechip">Loulo <small>#03</small></span>
+              </div>
+            </div>
+            <div class="country-row">
+              <div class="cell-person"><span class="avatar avatar--sm">SN</span><span><b>Sénégal</b><small style="color:var(--ink-faint)">ID #225 · 3 sites</small></span></div>
+              <div class="sitechips" style="max-width:60%">
+                <span class="sitechip sitechip--hq">HQ · Dakar <small>#01</small></span>
+                <span class="sitechip">Sabodala <small>#02</small></span>
+                <span class="sitechip">Kédougou <small>#03</small></span>
+              </div>
+            </div>
+            <div class="country-row">
+              <div class="cell-person"><span class="avatar avatar--sm">GN</span><span><b>Guinée</b><small style="color:var(--ink-faint)">ID #227 · 3 sites</small></span></div>
+              <div class="sitechips" style="max-width:60%">
+                <span class="sitechip sitechip--hq">HQ · Conakry <small>#01</small></span>
+                <span class="sitechip">Siguiri <small>#02</small></span>
+                <span class="sitechip">Boké <small>#03</small></span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ══ CRÉER UN PAYS ══ -->
+      <section class="subview" id="view-create">
+        <div style="margin-bottom:18px">
+          <h2 style="font-size:19px;font-weight:700">Créer un pays &amp; son HQ</h2>
+          <p class="muted" style="font-size:12.5px;margin-top:3px">Définissez le pays, son siège (HQ) et ses premiers sites d'exploitation.</p>
+        </div>
+        <section class="panel">
+          <div class="panel__body">
+            <div class="grid-2" style="grid-template-columns:1fr 1fr;gap:0 18px">
+              <div class="field"><label>Nom du pays *</label><input class="input" placeholder="Ex : Burkina Faso"></div>
+              <div class="field"><label>Nom du HQ (siège) *</label><input class="input" placeholder="Ex : Ouagadougou"></div>
+            </div>
+            <div class="field">
+              <label>Premiers sites d'exploitation</label>
+              <input class="input" placeholder="Nom du site…" style="margin-bottom:10px">
+              <input class="input" placeholder="Nom du site…">
+            </div>
+            <div class="row" style="gap:12px;margin-top:4px">
+              <button class="btn btn--primary">Créer le pays</button>
+              <button class="btn btn--ghost js-goto" data-view="menu">Annuler</button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ══ GÉRER LES SITES ══ -->
+      <section class="subview" id="view-sites">
+        <div style="margin-bottom:18px">
+          <h2 style="font-size:19px;font-weight:700">Gérer les sites</h2>
+          <p class="muted" style="font-size:12.5px;margin-top:3px">Ajoutez ou supprimez des sites pour un pays.</p>
+        </div>
+        <div class="field" style="max-width:360px">
+          <label>Sélectionner un pays</label>
+          <select class="select">
+            <option>Côte d'Ivoire</option>
+            <option>Mali</option>
+            <option>Sénégal</option>
+            <option>Guinée</option>
+          </select>
+        </div>
+        <section class="panel" style="overflow:hidden">
+          <div class="panel__head"><h2>Sites de : Côte d'Ivoire</h2><div class="topbar__spacer"></div><span class="sub">4 site(s)</span></div>
+          <div class="siterow"><div class="siterow__id"><span class="siterow__hq">HQ</span><span><b>Abidjan</b> <small style="color:var(--ink-faint)">ID #01 · scope: abidjan</small></span></div><span class="siterow__na">Non supprimable</span></div>
+          <div class="siterow"><div class="siterow__id"><span><b>Sissengué</b> <small style="color:var(--ink-faint)">ID #02 · scope: sissengue</small></span></div><button class="btn btn--ghost">Supprimer</button></div>
+          <div class="siterow"><div class="siterow__id"><span><b>Ity</b> <small style="color:var(--ink-faint)">ID #03 · scope: ity</small></span></div><button class="btn btn--ghost">Supprimer</button></div>
+          <div class="siterow"><div class="siterow__id"><span><b>Yamoussoukro</b> <small style="color:var(--ink-faint)">ID #04 · scope: yamoussoukro</small></span></div><button class="btn btn--ghost">Supprimer</button></div>
+          <div class="addsite"><input class="input" placeholder="Nom du nouveau site…"><button class="btn btn--primary">Ajouter</button></div>
+        </section>
+        <div style="margin-top:16px"><button class="btn btn--ghost js-goto" data-view="menu">Retour</button></div>
+      </section>
+
+      <!-- ══ AFFECTER UN ADMINISTRATEUR ══ -->
+      <section class="subview" id="view-assign">
+        <div style="margin-bottom:18px">
+          <h2 style="font-size:19px;font-weight:700">Affecter un administrateur</h2>
+          <p class="muted" style="font-size:12.5px;margin-top:3px">Nommez un employé comme administrateur d'un pays ou d'un site spécifique.</p>
+        </div>
+        <div class="lock-note">
+          <svg viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
+          Le rôle de Super Admin n'est pas assignable via cette interface.
+        </div>
+        <section class="panel">
+          <div class="panel__body">
+            <div class="grid-2" style="grid-template-columns:1fr 1fr;gap:18px">
+              <div class="field" style="margin-bottom:0"><label>Pays *</label><select class="select"><option>Côte d'Ivoire</option><option>Mali</option><option>Sénégal</option><option>Guinée</option></select></div>
+              <div class="field" style="margin-bottom:0"><label>Site (optionnel — défaut : HQ)</label><select class="select"><option>HQ (Abidjan) — défaut</option><option>Sissengué</option><option>Ity</option><option>Yamoussoukro</option></select></div>
+            </div>
+            <div class="divider"></div>
+            <p style="font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px">Informations de l'administrateur à créer</p>
+            <div class="grid-2" style="grid-template-columns:1fr 1fr;gap:0 18px">
+              <div class="field"><label>Matricule *</label><input class="input" placeholder="Ex : 20001"></div>
+              <div class="field"><label>Nom et prénoms *</label><input class="input" placeholder="Ex : Awa Koné"></div>
+              <div class="field"><label>Email</label><input class="input" placeholder="Employe.20001@company.com"></div>
+              <div class="field"><label>Fonction</label><input class="input" placeholder="Ex : COUNTRY HR MANAGER"></div>
+            </div>
+            <div class="field"><label>Département</label><input class="input" placeholder="Ex : RESSOURCES HUMAINES"></div>
+            <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--ink-soft);margin:6px 0 12px">Rôle à affecter *</label>
+            <div class="rolecards" id="rolecards">
+              <button class="rolecard is-sel" data-role="coordinateur"><b>Coordinateur Pays</b><p>Pilotage RH de l'ensemble du pays</p><span class="route">Interface → /country-admin</span></button>
+              <button class="rolecard" data-role="administrator"><b>Administrateur Site</b><p>Gestion des employés d'un site</p><span class="route">Interface → /site-admin</span></button>
+              <button class="rolecard" data-role="evaluateur"><b>Évaluateur N+1</b><p>Évaluation des collaborateurs directs</p><span class="route">Interface → /manager</span></button>
+              <button class="rolecard" data-role="employe"><b>Employé</b><p>Accès espace personnel et évaluation</p><span class="route">Interface → /employee</span></button>
+              <button class="rolecard" data-role="calibration"><b>Responsable Calibration</b><p>Arbitrage et calibration N+2</p><span class="route">Interface → /manager-n2</span></button>
+            </div>
+          </div>
+        </section>
+        <div class="row" style="gap:12px;margin-top:16px">
+          <button class="btn btn--primary">Affecter l'administrateur</button>
+          <button class="btn btn--ghost js-goto" data-view="menu">Annuler</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+(function () {
+  var tabs = document.querySelectorAll(".subnav .chipfilter");
+  var ids = ["menu", "create", "sites", "assign"];
+  var views = {}; ids.forEach(function (k) { views[k] = document.getElementById("view-" + k); });
+  function show(name) {
+    ids.forEach(function (k) { views[k].classList.toggle("is-shown", k === name); });
+    tabs.forEach(function (t) { t.classList.toggle("is-on", t.dataset.view === name); });
+    window.scrollTo(0, 0);
+  }
+  tabs.forEach(function (t) { t.addEventListener("click", function () { show(t.dataset.view); }); });
+  document.querySelectorAll(".js-goto").forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.view); }); });
+  var cards = document.getElementById("rolecards");
+  cards.addEventListener("click", function (e) {
+    var c = e.target.closest(".rolecard"); if (!c) return;
+    cards.querySelectorAll(".rolecard").forEach(function (x) { x.classList.remove("is-sel"); });
+    c.classList.add("is-sel");
+  });
+})();
+</script>
+</body>
+</html>
