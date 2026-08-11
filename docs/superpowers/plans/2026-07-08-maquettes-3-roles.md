@@ -243,7 +243,8 @@
 - [x] **Step 3 :** Playwright screenshot des sous-vues (bascule JS). ✓ vérifié 2026-08-10 : 3 sous-vues OK, Créer un Pays absent (mode restreint), 5 rôles, zéro requête externe.
 
 ### Task 3.4 : Checkpoint RH Pays + clôture
-- [x] **Step 1 :** Revue des écrans RH + réutilisation correcte de 9-box / Mon Profil / Mon Équipe (liens rail vers `../partages/9box.html`, `../employe/profil.html`, `../manager/equipe.html` — tous 200). Fil narratif Blaise OK, campagne en lecture seule, pas de modules Compétences dans le rail RH Pays.
+- [x] **Step 1 :** Revue des écrans RH + réutilisation correcte de 9-box / Mon Équipe (liens rail vers `../partages/9box.html`, `../manager/equipe.html` — tous 200). Fil narratif Blaise OK, campagne en lecture seule, pas de modules Compétences dans le rail RH Pays.
+- [x] **Step 1b (audit 2026-08-11) :** Correctifs suite audit de complétude — création d'un **`rh-pays/profil.html` dédié** (Blaise Bonzou Essey, COUNTRY HR MANAGER, matricule 10053, section « évalué » N+1 10089 / N+2 10088) au lieu de réutiliser `../employe/profil.html` (mauvaise persona) ; les 4 écrans RH Pays pointent désormais vers ce profil ; bouton « Révisions RH » de `pilotage.html` câblé vers `../manager/equipe.html` (était `#`). Tous les liens des 4 écrans → 200.
 - [x] **Step 2 :** `index.html` mis à jour : la carte « Rôle 3 · RH Pays » (ex-« à venir ») pointe désormais vers `rh-pays/pilotage.html` et liste les 3 écrans ; sous-titre « Les 3 rôles sont livrés ».
 - [x] **Step 3 :** Revue globale Playwright ✓ 2026-08-10 : les 8 URL du parcours (index + 3 RH Pays + 9box + equipe + profil + login) répondent 200, zéro requête externe (hors favicon navigateur). **Phase 3 clôturée — les 3 parcours sont livrés.**
 
