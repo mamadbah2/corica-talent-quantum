@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Rapport Consolidé Groupe</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .rail__logout { margin-left: auto; width: 30px; height: 30px; flex: none; display: grid; place-items: center; border: 1px solid var(--rail-2); color: var(--rail-faint); transition: background 140ms ease, color 140ms ease; }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+  .avatar-link { display: inline-flex; }
+
+  .gauge--hero { width: 148px; height: 148px; }
+  .gauge--hero .gauge__value { font-size: 30px; }
+  .gauge--hero .gauge__fill { stroke: var(--ink); }
+  .rp-grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
+  .rp-gauge-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+  .rp-gauge-card .k-label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-soft); }
+  .rp-gauge-card .k-sub { font-size: 13px; font-weight: 600; color: var(--ink); margin-top: 4px; }
+  .siteline { display: flex; flex-direction: column; gap: 7px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+  .siteline:last-child { border-bottom: none; }
+  .siteline__top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13.5px; }
+  .siteline__top b { font-weight: 700; }
+  .siteline__meta { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .siteline__pct { font-weight: 800; color: var(--ink); margin-left: 14px; }
+  .siteline .bar { height: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Direction Groupe</div>
+    <a class="navitem" href="dashboard.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM256 80a24 24 0 1 1 0 48 24 24 0 1 1 0-48zM184 208c0-13.3 10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 112 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l8 0 0-88-24 0c-13.3 0-24-10.7-24-24z"/></svg>
+      <span class="navlabel">Supervision Globale</span>
+    </a>
+    <a class="navitem is-active" href="rapport-consolide.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="32" y="256" width="96" height="224"/><rect x="208" y="160" width="96" height="320"/><rect x="384" y="64" width="96" height="416"/></svg>
+      <span class="navlabel">Rapport Consolidé</span>
+    </a>
+    <a class="navitem" href="../partages/9box.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="16" y="16" width="144" height="144"/><rect x="184" y="16" width="144" height="144"/><rect x="352" y="16" width="144" height="144"/><rect x="16" y="184" width="144" height="144"/><rect x="184" y="184" width="144" height="144"/><rect x="352" y="184" width="144" height="144"/><rect x="16" y="352" width="144" height="144"/><rect x="184" y="352" width="144" height="144"/><rect x="352" y="352" width="144" height="144"/></svg>
+      <span class="navlabel">Matrice 9-Box</span>
+    </a>
+    <a class="navitem" href="../manager/equipe.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
+      <span class="navlabel">Mon Équipe Directe</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="profil.html" title="Voir mon profil">
+        <div class="avatar">BA</div>
+        <div class="who"><b>Bamba Abdoulaye</b><small>DRH GROUPE</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Rapport Consolidé — Groupe</h1>
+        <p>Bamba Abdoulaye · DRH GROUPE · Totalité du Groupe · Campagne 2026</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <span class="pill pill--closed">Totalité du Groupe</span>
+      <a class="btn btn--primary" href="#">Exporter (PDF)</a>
+    </header>
+
+    <div class="content">
+      <p class="muted" style="font-size:12.5px;margin:0 0 18px">Reporting global de l'évaluation annuelle consolidé pour tous les pays et filiales du Groupe.</p>
+
+      <div class="rp-grid">
+        <!-- RATIO GLOBAL GROUPE -->
+        <section class="panel">
+          <div class="panel__body rp-gauge-card">
+            <span class="k-label">Ratio global groupe évalué</span>
+            <div class="gauge gauge--hero">
+              <svg viewBox="0 0 96 96">
+                <circle class="gauge__track" cx="48" cy="48" r="40"></circle>
+                <circle class="gauge__fill" cx="48" cy="48" r="40" stroke-dasharray="251.2" stroke-dashoffset="30.1"></circle>
+              </svg>
+              <span class="gauge__value num">88%</span>
+            </div>
+            <span class="k-sub">1 279 / 1 450 collaborateurs évalués</span>
+          </div>
+        </section>
+
+        <!-- EFFECTIF & % PAR PAYS -->
+        <section class="panel">
+          <div class="panel__head"><h2>Effectif &amp; pourcentage d'évaluation par pays</h2></div>
+          <div class="panel__body" style="padding-top:6px;padding-bottom:8px">
+            <div class="siteline">
+              <div class="siteline__top"><b>Côte d'Ivoire</b><span><span class="siteline__meta">499 / 540 évalués</span><span class="siteline__pct">92 %</span></span></div>
+              <div class="bar"><i style="width:92%"></i></div>
+            </div>
+            <div class="siteline">
+              <div class="siteline__top"><b>Mali</b><span><span class="siteline__meta">320 / 400 évalués</span><span class="siteline__pct">80 %</span></span></div>
+              <div class="bar"><i style="width:80%"></i></div>
+            </div>
+            <div class="siteline">
+              <div class="siteline__top"><b>Sénégal</b><span><span class="siteline__meta">310 / 310 évalués</span><span class="siteline__pct">100 %</span></span></div>
+              <div class="bar"><i style="width:100%"></i></div>
+            </div>
+            <div class="siteline">
+              <div class="siteline__top"><b>Guinée</b><span><span class="siteline__meta">150 / 200 évalués</span><span class="siteline__pct">75 %</span></span></div>
+              <div class="bar"><i style="width:75%"></i></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- CONSOLIDATION PAR PAYS -->
+      <section class="panel" style="margin-top:20px;overflow:hidden">
+        <div class="panel__head"><h2>Consolidation par pays</h2></div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Pays</th>
+              <th style="text-align:center">Effectif total</th>
+              <th style="text-align:center">Évalués</th>
+              <th style="text-align:center">Taux d'achèvement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Côte d'Ivoire</b></td><td style="text-align:center;font-variant-numeric:tabular-nums">540</td><td style="text-align:center;font-variant-numeric:tabular-nums">499</td><td style="text-align:center"><b>92 %</b></td></tr>
+            <tr><td><b>Mali</b></td><td style="text-align:center;font-variant-numeric:tabular-nums">400</td><td style="text-align:center;font-variant-numeric:tabular-nums">320</td><td style="text-align:center"><b>80 %</b></td></tr>
+            <tr><td><b>Sénégal</b></td><td style="text-align:center;font-variant-numeric:tabular-nums">310</td><td style="text-align:center;font-variant-numeric:tabular-nums">310</td><td style="text-align:center"><b>100 %</b></td></tr>
+            <tr><td><b>Guinée</b></td><td style="text-align:center;font-variant-numeric:tabular-nums">200</td><td style="text-align:center;font-variant-numeric:tabular-nums">150</td><td style="text-align:center"><b>75 %</b></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+</body>
+</html>
