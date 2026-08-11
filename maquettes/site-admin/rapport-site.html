@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Rapport de Pilotage Site</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  .rail__logout { margin-left: auto; width: 30px; height: 30px; flex: none; display: grid; place-items: center; border: 1px solid var(--rail-2); color: var(--rail-faint); transition: background 140ms ease, color 140ms ease; }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+  .avatar-link { display: inline-flex; }
+
+  /* Ratio site = DONNÉE → jauge neutre (--ink), pas orange. */
+  .gauge--hero { width: 148px; height: 148px; }
+  .gauge--hero .gauge__value { font-size: 30px; }
+  .gauge--hero .gauge__fill { stroke: var(--ink); }
+  .rp-grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
+  .rp-gauge-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+  .rp-gauge-card .k-label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-soft); }
+  .rp-gauge-card .k-sub { font-size: 13px; font-weight: 600; color: var(--ink); margin-top: 4px; }
+  .siteline { display: flex; flex-direction: column; gap: 7px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+  .siteline:last-child { border-bottom: none; }
+  .siteline__top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13.5px; }
+  .siteline__top b { font-weight: 700; }
+  .siteline__meta { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .siteline__pct { font-weight: 800; color: var(--ink); margin-left: 14px; }
+  .siteline .bar { height: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Espace RH Site</div>
+    <a class="navitem" href="dashboard.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM256 416c35.3 0 64-28.7 64-64c0-17.4-6.9-33.1-18.1-44.6L366 161.7c5.3-12.1-.2-26.3-12.3-31.6s-26.3 .2-31.6 12.3L257.9 288c-.6 0-1.3 0-1.9 0c-35.3 0-64 28.7-64 64s28.7 64 64 64zM176 144a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM96 288a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm352-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>
+      <span class="navlabel">Tableau de bord</span>
+    </a>
+    <a class="navitem" href="equipe.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
+      <span class="navlabel">Mon Équipe Directe</span>
+    </a>
+    <a class="navitem" href="gestion-site.html">
+      <svg viewBox="0 0 384 512" fill="currentColor"><path d="M48 0C21.5 0 0 21.5 0 48L0 464c0 26.5 21.5 48 48 48l96 0 0-80c0-26.5 21.5-48 48-48s48 21.5 48 48l0 80 96 0c26.5 0 48-21.5 48-48l0-416c0-26.5-21.5-48-48-48L48 0zM64 240c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zm112-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zM80 96l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zM272 96l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16z"/></svg>
+      <span class="navlabel">Gestion du Site</span>
+    </a>
+    <a class="navitem" href="revision-rh.html">
+      <svg viewBox="0 0 384 512" fill="currentColor"><path d="M192 0c-41.8 0-77.4 26.7-90.5 64L64 64C28.7 64 0 92.7 0 128L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64l-37.5 0C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM305 273L177 401c-9.4 9.4-24.6 9.4-33.9 0L79 337c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L271 239c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>
+      <span class="navlabel">Révision RH</span>
+    </a>
+    <a class="navitem is-active" href="rapport-site.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="32" y="256" width="96" height="224"/><rect x="208" y="160" width="96" height="320"/><rect x="384" y="64" width="96" height="416"/></svg>
+      <span class="navlabel">Rapport Site</span>
+    </a>
+    <a class="navitem" href="../partages/9box.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="16" y="16" width="144" height="144"/><rect x="184" y="16" width="144" height="144"/><rect x="352" y="16" width="144" height="144"/><rect x="16" y="184" width="144" height="144"/><rect x="184" y="184" width="144" height="144"/><rect x="352" y="184" width="144" height="144"/><rect x="16" y="352" width="144" height="144"/><rect x="184" y="352" width="144" height="144"/><rect x="352" y="352" width="144" height="144"/></svg>
+      <span class="navlabel">Matrice 9-Box</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="profil.html" title="Voir mon profil">
+        <div class="avatar">KJ</div>
+        <div class="who"><b>Koua J. K. Kouamanan</b><small>ADMIN SITE</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Rapport de Pilotage Site</h1>
+        <p>Koua J. K. Kouamanan · ADMIN SITE · Sissengué · Campagne 2026</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <span class="pill pill--closed">Accès Confidentiel</span>
+      <a class="btn btn--primary" href="#">Exporter (PDF)</a>
+    </header>
+
+    <div class="content">
+      <p class="muted" style="font-size:12.5px;margin:0 0 18px">Reporting de l'évaluation annuelle consolidé pour tous les départements du site de Sissengué.</p>
+
+      <div class="rp-grid">
+        <!-- RATIO GLOBAL SITE -->
+        <section class="panel">
+          <div class="panel__body rp-gauge-card">
+            <span class="k-label">Ratio global site évalué</span>
+            <div class="gauge gauge--hero">
+              <svg viewBox="0 0 96 96">
+                <circle class="gauge__track" cx="48" cy="48" r="40"></circle>
+                <circle class="gauge__fill" cx="48" cy="48" r="40" stroke-dasharray="251.2" stroke-dashoffset="20.1"></circle>
+              </svg>
+              <span class="gauge__value num">92%</span>
+            </div>
+            <span class="k-sub">193 / 210 collaborateurs évalués</span>
+          </div>
+        </section>
+
+        <!-- EFFECTIF & % PAR DÉPARTEMENT -->
+        <section class="panel">
+          <div class="panel__head"><h2>Effectif &amp; pourcentage d'évaluation par département</h2></div>
+          <div class="panel__body" style="padding-top:6px;padding-bottom:8px">
+            <div class="siteline">
+              <div class="siteline__top"><b>Opérations Minières</b><span><span class="siteline__meta">88 / 96 évalués</span><span class="siteline__pct">92 %</span></span></div>
+              <div class="bar"><i style="width:92%"></i></div>
+            </div>
+            <div class="siteline">
+              <div class="siteline__top"><b>Maintenance</b><span><span class="siteline__meta">51 / 60 évalués</span><span class="siteline__pct">85 %</span></span></div>
+              <div class="bar"><i style="width:85%"></i></div>
+            </div>
+            <div class="siteline">
+              <div class="siteline__top"><b>HSEQ</b><span><span class="siteline__meta">30 / 30 évalués</span><span class="siteline__pct">100 %</span></span></div>
+              <div class="bar"><i style="width:100%"></i></div>
+            </div>
+            <div class="siteline">
+              <div class="siteline__top"><b>Ressources Humaines</b><span><span class="siteline__meta">24 / 24 évalués</span><span class="siteline__pct">100 %</span></span></div>
+              <div class="bar"><i style="width:100%"></i></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- DISTRIBUTION 9-BOX PAR DÉPARTEMENT -->
+      <section class="panel" style="margin-top:20px;overflow:hidden">
+        <div class="panel__head"><h2>Distribution 9-Box dominante <span class="sub">(par département)</span></h2></div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Département</th>
+              <th style="text-align:center">Effectif</th>
+              <th style="text-align:center">Taux d'achèvement</th>
+              <th>Catégorie 9-Box dominante</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Opérations Minières</b></td>
+              <td style="text-align:center;font-variant-numeric:tabular-nums">96</td>
+              <td style="text-align:center"><b>92 %</b></td>
+              <td><span class="tag">Piliers (45 %)</span></td>
+            </tr>
+            <tr>
+              <td><b>Maintenance</b></td>
+              <td style="text-align:center;font-variant-numeric:tabular-nums">60</td>
+              <td style="text-align:center"><b>85 %</b></td>
+              <td><span class="tag">Performeurs solides (30 %)</span></td>
+            </tr>
+            <tr>
+              <td><b>HSEQ</b></td>
+              <td style="text-align:center;font-variant-numeric:tabular-nums">30</td>
+              <td style="text-align:center"><b>100 %</b></td>
+              <td><span class="tag">Hauts performeurs (50 %)</span></td>
+            </tr>
+            <tr>
+              <td><b>Ressources Humaines</b></td>
+              <td style="text-align:center;font-variant-numeric:tabular-nums">24</td>
+              <td style="text-align:center"><b>100 %</b></td>
+              <td><span class="tag">Étoiles (25 %)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+</body>
+</html>

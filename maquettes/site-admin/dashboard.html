@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORICA Talent Quantum · Tableau de bord — Administrateur Site</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  /* Coque reprise du parcours (equipe.html §gabarit). Non dans app.css → dupliquée. */
+  .rail__logout { margin-left: auto; width: 30px; height: 30px; flex: none; display: grid; place-items: center; border: 1px solid var(--rail-2); color: var(--rail-faint); transition: background 140ms ease, color 140ms ease; }
+  .rail__logout:hover { background: var(--rail-2); color: white; }
+  .rail__logout svg { width: 14px; height: 14px; }
+  .is-collapsed .rail__logout { display: none; }
+  .rail__me { display: flex; align-items: center; gap: 10px; padding: 4px 6px; margin: -4px -6px; text-decoration: none; transition: background 140ms ease; }
+  .rail__me:hover { background: var(--rail-2); }
+  .avatar-link { display: inline-flex; }
+
+  /* Bandeau de rôle — neutre (info, pas action). */
+  .role-banner { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink-soft); background: var(--surface-2); border: 1px solid var(--line); padding: 11px 15px; margin-bottom: 20px; }
+  .role-banner svg { flex: none; width: 15px; height: 15px; fill: var(--ink-faint); }
+  .role-banner b { color: var(--ink); }
+
+  /* KPI cards (fond rail brun) — valeurs textuelles (pays/site) : repris de gestion-bureau. */
+  .kpi-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .kpi-card { background: var(--rail); color: var(--rail-ink); padding: 18px 20px; }
+  .kpi-card .l { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--rail-faint); }
+  .kpi-card .n { font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .kpi-card .n small { font-size: 13px; font-weight: 600; color: var(--rail-faint); }
+
+  /* Étapes du workflow — barres neutres (donnée, pas action). */
+  .steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .step-col { display: flex; flex-direction: column; gap: 7px; }
+  .step-col__top { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 700; }
+  .step-col__top .c { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .step-col__top .p { color: var(--ink-soft); }
+  .step-col .bar { height: 8px; }
+  .step-col__lbl { font-size: 10.5px; font-weight: 600; color: var(--ink-soft); line-height: 1.3; }
+
+  /* Note de verrouillage inline — neutre. */
+  .lock-note { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--ink-soft); }
+  .lock-note svg { flex: none; width: 13px; height: 13px; fill: var(--ink-faint); }
+
+  .actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .pct-cell { display: flex; align-items: center; gap: 10px; min-width: 150px; }
+  .pct-cell .bar { flex: 1; height: 7px; }
+  .pct-cell b { font-variant-numeric: tabular-nums; min-width: 40px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- RAIL -->
+  <nav class="rail">
+    <div class="rail__brand">
+      <img class="rail-logo" src="../../brand-assets/corica-logo-white.svg" alt="CORICA">
+      <img class="rail-mark" src="../../brand-assets/corica-mark.svg" alt="CORICA">
+      <span class="rail-product">Talent Quantum</span>
+    </div>
+    <button class="rail__toggle">
+      <svg viewBox="0 0 320 512" fill="currentColor"><path d="M15 239c-9.4 9.4-9.4 24.6 0 33.9L207 465c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L65.9 256 241 81c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15 239z"/></svg>
+      <span class="navlabel">Réduire le menu</span>
+    </button>
+
+    <div class="rail__group">Espace RH Site</div>
+    <a class="navitem is-active" href="dashboard.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><path d="M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM256 416c35.3 0 64-28.7 64-64c0-17.4-6.9-33.1-18.1-44.6L366 161.7c5.3-12.1-.2-26.3-12.3-31.6s-26.3 .2-31.6 12.3L257.9 288c-.6 0-1.3 0-1.9 0c-35.3 0-64 28.7-64 64s28.7 64 64 64zM176 144a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM96 288a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm352-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>
+      <span class="navlabel">Tableau de bord</span>
+    </a>
+    <a class="navitem" href="equipe.html">
+      <svg viewBox="0 0 640 512" fill="currentColor"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
+      <span class="navlabel">Mon Équipe Directe</span>
+    </a>
+    <a class="navitem" href="gestion-site.html">
+      <svg viewBox="0 0 384 512" fill="currentColor"><path d="M48 0C21.5 0 0 21.5 0 48L0 464c0 26.5 21.5 48 48 48l96 0 0-80c0-26.5 21.5-48 48-48s48 21.5 48 48l0 80 96 0c26.5 0 48-21.5 48-48l0-416c0-26.5-21.5-48-48-48L48 0zM64 240c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zm112-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zM80 96l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zM272 96l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16z"/></svg>
+      <span class="navlabel">Gestion du Site</span>
+    </a>
+    <a class="navitem" href="revision-rh.html">
+      <svg viewBox="0 0 384 512" fill="currentColor"><path d="M192 0c-41.8 0-77.4 26.7-90.5 64L64 64C28.7 64 0 92.7 0 128L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64l-37.5 0C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM305 273L177 401c-9.4 9.4-24.6 9.4-33.9 0L79 337c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L271 239c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>
+      <span class="navlabel">Révision RH</span>
+    </a>
+    <a class="navitem" href="rapport-site.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="32" y="256" width="96" height="224"/><rect x="208" y="160" width="96" height="320"/><rect x="384" y="64" width="96" height="416"/></svg>
+      <span class="navlabel">Rapport Site</span>
+    </a>
+    <a class="navitem" href="../partages/9box.html">
+      <svg viewBox="0 0 512 512" fill="currentColor"><rect x="16" y="16" width="144" height="144"/><rect x="184" y="16" width="144" height="144"/><rect x="352" y="16" width="144" height="144"/><rect x="16" y="184" width="144" height="144"/><rect x="184" y="184" width="144" height="144"/><rect x="352" y="184" width="144" height="144"/><rect x="16" y="352" width="144" height="144"/><rect x="184" y="352" width="144" height="144"/><rect x="352" y="352" width="144" height="144"/></svg>
+      <span class="navlabel">Matrice 9-Box</span>
+    </a>
+
+    <div class="rail__foot">
+      <a class="rail__me" href="profil.html" title="Voir mon profil">
+        <div class="avatar">KJ</div>
+        <div class="who"><b>Koua J. K. Kouamanan</b><small>ADMIN SITE</small></div>
+      </a>
+      <a class="rail__logout" href="../login.html" title="Déconnexion">
+        <svg viewBox="0 0 512 512" fill="currentColor"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Tableau de bord — Administrateur Site</h1>
+        <p>Koua J. K. Kouamanan · HR SUPERINTENDENT · Sissengué · Campagne 2026</p>
+      </div>
+      <div class="topbar__spacer"></div>
+      <span class="pill pill--closed">Accès Confidentiel</span>
+      <a class="avatar-link" href="profil.html" title="Mon profil"><div class="avatar avatar--sm">KJ</div></a>
+    </header>
+
+    <div class="content">
+
+      <!-- BANDEAU DE RÔLE -->
+      <div class="role-banner">
+        <svg viewBox="0 0 512 512"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0z"/></svg>
+        <span><b>Interface Administrateur Site</b> — espace strictement réservé à votre rôle (périmètre : site de Sissengué).</span>
+      </div>
+
+      <div style="margin-bottom:18px">
+        <h2 style="font-size:19px;font-weight:700">Bienvenue, Koua J. K. Kouamanan</h2>
+        <p class="muted" style="font-size:12.5px;margin-top:3px">Votre espace de pilotage RH du site de Sissengué.</p>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-cards">
+        <div class="kpi-card"><div class="l">Pays</div><div class="n">Côte d'Ivoire</div></div>
+        <div class="kpi-card"><div class="l">Site</div><div class="n">Sissengué</div></div>
+        <div class="kpi-card"><div class="l">Effectif site</div><div class="n">210 <small>collaborateurs</small></div></div>
+      </div>
+
+      <!-- AVANCEMENT DE LA CAMPAGNE (5 étapes) -->
+      <section class="panel" style="margin-bottom:20px">
+        <div class="panel__head"><h2>Avancement de la campagne — temps réel</h2></div>
+        <div class="panel__body">
+          <div class="steps">
+            <div class="step-col">
+              <div class="step-col__top"><span class="c">205/210</span><span class="p">98 %</span></div>
+              <div class="bar"><i style="width:98%"></i></div>
+              <div class="step-col__lbl">Objectifs soumis</div>
+            </div>
+            <div class="step-col">
+              <div class="step-col__top"><span class="c">200/210</span><span class="p">95 %</span></div>
+              <div class="bar"><i style="width:95%"></i></div>
+              <div class="step-col__lbl">Objectifs validés N+1</div>
+            </div>
+            <div class="step-col">
+              <div class="step-col__top"><span class="c">195/210</span><span class="p">93 %</span></div>
+              <div class="bar"><i style="width:93%"></i></div>
+              <div class="step-col__lbl">Auto-évaluations soumises</div>
+            </div>
+            <div class="step-col">
+              <div class="step-col__top"><span class="c">193/210</span><span class="p">92 %</span></div>
+              <div class="bar"><i style="width:92%"></i></div>
+              <div class="step-col__lbl">Évaluations N+1 soumises</div>
+            </div>
+            <div class="step-col">
+              <div class="step-col__top"><span class="c">180/210</span><span class="p">86 %</span></div>
+              <div class="bar"><i style="width:86%"></i></div>
+              <div class="step-col__lbl">Dossiers clôturés N+2</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid-2">
+        <!-- CAMPAGNE ACTIVE — LECTURE SEULE -->
+        <section class="campaign-card">
+          <div class="campaign-card__band"></div>
+          <div class="campaign-card__body">
+            <div class="campaign-card__head">
+              <h3>Campagne d'Évaluation Active</h3>
+              <span class="pill pill--progress">Ouverte</span>
+            </div>
+            <p class="campaign-card__meta">Campagne 2026 · du 1 juin 2026 au 30 septembre 2026</p>
+            <div class="campaign-card__foot">
+              <span class="lock-note">
+                <svg viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
+                Configuration réservée à l'Administrateur Général et au Super Admin.
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ACTIONS PRINCIPALES -->
+        <section class="panel">
+          <div class="panel__head"><h2>Actions principales</h2></div>
+          <div class="panel__body">
+            <div class="actions-grid">
+              <a class="btn btn--primary btn--block" href="gestion-site.html">Gestion du site</a>
+              <a class="btn btn--ghost btn--block" href="equipe.html">Mon équipe</a>
+              <a class="btn btn--ghost btn--block" href="revision-rh.html">Révision RH</a>
+              <a class="btn btn--ghost btn--block" href="rapport-site.html">Rapport de pilotage</a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ÉTAT PAR DÉPARTEMENT -->
+      <section class="panel" style="margin-top:20px;overflow:hidden">
+        <div class="panel__head">
+          <h2>État d'avancement par département</h2>
+          <div class="topbar__spacer"></div>
+          <a class="btn btn--ghost" href="rapport-site.html">Exporter le rapport</a>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Département</th>
+              <th style="text-align:center">Effectif</th>
+              <th>Taux d'achèvement</th>
+              <th>Distribution 9-Box dominante</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Opérations Minières</b></td>
+              <td style="text-align:center;font-variant-numeric:tabular-nums">96</td>
+              <td><div class="pct-cell"><div class="bar"><i style="width:92%"></i></div><b>92 %</b></div></td>
+              <td><span class="tag">Piliers (45 %)</span></td>
+            </tr>
+            <tr>
+              <td><b>Maintenance</b></td>
+              <td style="text-align:center;font-variant-numeric:tabular-nums">60</td>
+              <td><div class="pct-cell"><div class="bar"><i style="width:85%"></i></div><b>85 %</b></div></td>
+              <td><span class="tag">Performeurs solides (30 %)</span></td>
+            </tr>
+            <tr>
+              <td><b>HSEQ</b></td>
+              <td style="text-align:center;font-variant-numeric:tabular-nums">30</td>
+              <td><div class="pct-cell"><div class="bar"><i style="width:100%"></i></div><b>100 %</b></div></td>
+              <td><span class="tag">Hauts performeurs (50 %)</span></td>
+            </tr>
+            <tr>
+              <td><b>Ressources Humaines</b></td>
+              <td style="text-align:center;font-variant-numeric:tabular-nums">24</td>
+              <td><div class="pct-cell"><div class="bar"><i style="width:100%"></i></div><b>100 %</b></div></td>
+              <td><span class="tag">Étoiles (25 %)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+</body>
+</html>
