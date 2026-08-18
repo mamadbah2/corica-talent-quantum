@@ -10,18 +10,6 @@
      bordures d'accent des 4 cartes, champs lecture seule, zone photo, bouton déconnexion du rail. */
   .stack { display: flex; flex-direction: column; gap: 22px; }
 
-  .panel--orange,
-  .panel--olive,
-  .panel--brun,
-  .panel--brun50 { border: 1px solid var(--line); }
-
-  .panel__head h2 { display: flex; align-items: center; gap: 9px; }
-  .panel__head svg { width: 16px; height: 16px; flex: none; }
-  .panel--orange .panel__head svg,
-  .panel--olive  .panel__head svg,
-  .panel--brun   .panel__head svg,
-  .panel--brun50 .panel__head svg { fill: var(--corica-orange); }
-
   .span2 { grid-column: 1 / -1; }
   .field__hint { font-size: 12px; font-weight: 500; color: var(--ink-soft); }
   .input--ro { background: var(--surface-2); color: var(--ink-faint); cursor: not-allowed; }
@@ -124,10 +112,9 @@
     <div class="content">
       <div class="stack">
         <!-- Carte 1 : Informations Personnelles -->
-        <section class="panel panel--orange">
+        <section class="panel">
           <div class="panel__head">
-            <h2>Informations Personnelles
-            </h2>
+            <h2>Informations Personnelles</h2>
           </div>
           <div class="panel__body">
             <div class="photozone">
@@ -165,10 +152,9 @@
         </section>
 
         <!-- Carte 2 : Informations Professionnelles -->
-        <section class="panel panel--olive">
+        <section class="panel">
           <div class="panel__head">
-            <h2>Informations Professionnelles
-            </h2>
+            <h2>Informations Professionnelles</h2>
           </div>
           <div class="panel__body">
             <p class="rohint">Ces informations sont gérées par le RH de votre site.</p>
@@ -202,10 +188,9 @@
         </section>
 
         <!-- Carte 3 : Manager Direct (Évaluateur N+1) -->
-        <section class="panel panel--brun">
+        <section class="panel">
           <div class="panel__head">
-            <h2>Manager Direct (Évaluateur N+1)
-            </h2>
+            <h2>Manager Direct (Évaluateur N+1)</h2>
           </div>
           <div class="panel__body">
             <p class="rohint">Votre évaluateur est défini par le RH de votre site.</p>
@@ -227,10 +212,9 @@
         </section>
 
         <!-- Carte 4 : Manager N+2 (Calibration) -->
-        <section class="panel panel--brun50">
+        <section class="panel">
           <div class="panel__head">
-            <h2>Manager N+2 (Calibration)
-            </h2>
+            <h2>Manager N+2 (Calibration)</h2>
           </div>
           <div class="panel__body">
             <p class="rohint">Le comité de calibration N+2 est défini par le RH.</p>
