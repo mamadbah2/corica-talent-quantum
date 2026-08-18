@@ -85,8 +85,7 @@
   .evaltable__foot-label { font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
   .evaltable__foot-value { font-size: 24px; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 8px; margin-top: 4px; }
   .evaltable__foot-value svg { width: 18px; height: 18px; color: var(--ink); }
-  .evaltable__foot-value--n1 { font-size: 28px; color: var(--corica-orange); }
-  .evaltable__foot-value--n1 svg { color: var(--corica-orange); }
+  .evaltable__foot-value--n1 { font-size: 28px; }
   .evaltable__foot-count { text-align: right; }
   .evaltable__foot-count b { display: block; font-size: 18px; font-weight: 800; color: var(--ink); margin-top: 4px; }
 
@@ -94,8 +93,7 @@
      supplémentaire nécessaire. Palette : libellés en encre neutre (pas de vert/olive hors-palette). */
   .evalgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 28px; }
   .evalgrid .panel__body { display: flex; flex-direction: column; gap: 10px; }
-  .evalgrid label { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: var(--ink); }
-  .evalgrid label svg { width: 15px; height: 15px; color: var(--ink-soft); }
+  .evalgrid label { font-size: 13px; font-weight: 700; color: var(--ink); }
   .formation-row { display: flex; gap: 8px; }
   .formation-row .input { flex: 1; }
   .formation-row__del {
@@ -389,7 +387,6 @@
         <section class="panel">
           <div class="panel__body">
             <label>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               Commentaires Manager
             </label>
             <textarea class="textarea" style="min-height:100px" placeholder="Votre évaluation globale…">Anzoumana confirme sa maîtrise technique et son engagement HSE. Bon calibrage attendu pour une évolution vers un rôle de chef d'équipe en 2027. Poursuivre l'accompagnement sur la disponibilité des équipements.</textarea>
@@ -398,7 +395,6 @@
         <section class="panel">
           <div class="panel__body">
             <label>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
               Besoins en Formation
             </label>
             <div class="formation-row">

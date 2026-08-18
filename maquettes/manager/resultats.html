@@ -70,15 +70,6 @@
   .doc-table tfoot td { padding: 11px 12px; background: var(--surface-2); border-top: 1px solid var(--line); font-weight: 800; }
   .doc-table tfoot .doc-avg { color: var(--ink); font-size: 14px; }
 
-  /* Badge de note X/4 — échelle NEUTRE (les mêmes 4 tons bruns que .lvl-1..4 / .nb-l1..4
-     ailleurs dans le système), PAS orange : ce n'est pas une action, c'est une donnée de dossier
-     clôturé. Remplace le rouge/ambre/émeraude de la source React, hors palette stricte. */
-  .notebadge { display: inline-flex; align-items: center; padding: 3px 9px; font-size: 10.5px; font-weight: 800; border: 1px solid var(--line); white-space: nowrap; }
-  .notebadge--1 { background: oklch(0.975 0.004 60); color: var(--ink-faint); }
-  .notebadge--2 { background: oklch(0.938 0.006 52); color: var(--ink-soft); }
-  .notebadge--3 { background: oklch(0.892 0.008 46); color: var(--ink-soft); }
-  .notebadge--4 { background: oklch(0.842 0.011 42); color: var(--ink); }
-
   /* Cases "Demande de Formation" — cadres neutres, pas de saisie (dossier clôturé). */
   .doc-trainlist { display: flex; flex-direction: column; gap: 8px; }
   .doc-trainitem { border: 1px solid var(--line-soft); background: var(--surface-2); padding: 8px 12px; font-size: 12.5px; color: var(--ink); }
@@ -164,8 +155,7 @@
 
       <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:18px;flex-wrap:wrap;gap:10px">
         <div>
-          <h2 style="font-size:17px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:9px">Résultats de l'Évaluation
-          </h2>
+          <h2 style="font-size:17px;font-weight:700;margin-bottom:6px">Résultats de l'Évaluation</h2>
           <p class="muted" style="font-size:12.5px;margin:0">Dossier clôturé N+1 · consultation de la fiche officielle ci-dessous</p>
         </div>
         <span class="pill pill--closed">Dossier Clôturé</span>
@@ -261,7 +251,7 @@
                   <td>Réduire les temps d'arrêt machine — diminuer la fréquence et la durée des arrêts non planifiés sur la ligne de production, par une maintenance préventive rigoureuse et une remontée rapide des pannes.</td>
                   <td class="num">% de disponibilité ligne</td>
                   <td class="num">31/12/2026</td>
-                  <td style="text-align:center"><span class="notebadge notebadge--3">3/4 · Bon</span></td>
+                  <td style="text-align:center">3/4 · Bon</td>
                   <td class="num">Rapport maintenance Q4.pdf</td>
                   <td class="num">Bonne progression, disponibilité proche de la cible.</td>
                 </tr>
@@ -270,7 +260,7 @@
                   <td>Respecter les procédures HSE — appliquer strictement les consignes de sécurité, port des EPI et procédures de consignation sur l'ensemble du poste de travail.</td>
                   <td class="num">Zéro incident enregistré</td>
                   <td class="num">31/12/2026</td>
-                  <td style="text-align:center"><span class="notebadge notebadge--4">4/4 · Excellent</span></td>
+                  <td style="text-align:center">4/4 · Excellent</td>
                   <td class="num">Registre HSE 2026.pdf</td>
                   <td class="num">Zéro incident sur la période, exemplaire.</td>
                 </tr>
@@ -279,7 +269,7 @@
                   <td>Améliorer la cadence de production — optimiser les réglages de la ligne et réduire les micro-arrêts pour augmenter le volume produit par équipe.</td>
                   <td class="num">Tonnes/équipe</td>
                   <td class="num">31/12/2026</td>
-                  <td style="text-align:center"><span class="notebadge notebadge--3">3/4 · Bon</span></td>
+                  <td style="text-align:center">3/4 · Bon</td>
                   <td class="num">Suivi tonnage S2.xlsx</td>
                   <td class="num">Cadence en hausse, marge de progression sur les micro-arrêts.</td>
                 </tr>
